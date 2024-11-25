@@ -1,6 +1,8 @@
 {
   "hosting": {
-    "public": "y",
+    "site": "vitrinecar-cddd4",
+  
+    "public": "dist",
     "ignore": [
       "firebase.json",
       "**/.*",
