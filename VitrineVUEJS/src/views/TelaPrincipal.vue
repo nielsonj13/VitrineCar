@@ -46,17 +46,17 @@
   </template>
   
   <script>
-  import Navbar from '../components/NavBar.vue'; // Caminho atualizado
+  import Navbar from '../components/NavBar.vue'; 
 
   
   export default {
     name: 'BuscarVeiculo',
     components: {
-      Navbar, // Importa o componente Navbar
+      Navbar, 
     },
     data() {
       return {
-        busca: '', // Campo de busca
+        busca: '',
         marcas: [
           { nome: 'Fiat', img: 'public/logos/FIAT_logo.png' },
           { nome: 'BMW', img: 'public/logos/BMW_logo.png' },
