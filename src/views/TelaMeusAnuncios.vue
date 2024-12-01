@@ -1,7 +1,8 @@
 <template>
+  <!-- Navbar -->
+  <Navbar />
   <div class="container">
-    <!-- Navbar -->
-    <Navbar />
+    
   
     <!-- Conteúdo Principal -->
     <div class="content">

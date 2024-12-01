@@ -188,6 +188,8 @@ export default {
         alert(`Anúncio finalizado com sucesso! ID: ${id}`);
         console.log(this.anuncio);
 
+        this.$router.push("/TelaMeusAnuncios"); // Redireciona para a tela "Meus Anúncios"
+
         // Resetar o formulário após a finalização
         this.resetarFormulario();
       } catch (error) {

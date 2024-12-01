@@ -207,6 +207,7 @@ export default {
         alert("Anúncio editado com sucesso!");
         console.log(this.anuncio);
 
+        this.$router.push("/TelaMeusAnuncios"); // Redireciona para a tela "Meus Anúncios"
         // Resetar o formulário após a edição
         this.resetarFormulario();
       } catch (error) {
