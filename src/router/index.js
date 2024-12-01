@@ -13,11 +13,9 @@ import TelaMinhaConta from '@/views/TelaMinhaConta.vue';
 import TelaMeusAnuncios from '@/views/TelaMeusAnuncios.vue';
 import EditarAnuncio from '@/views/EditarAnuncio.vue';
 
-
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-
     {
       path: '/',
       name: 'TelaPrincipal',
@@ -78,10 +76,12 @@ const router = createRouter({
       name: 'TelaMeusAnuncios',
       component: TelaMeusAnuncios,
     },
+    // Rota para editar o anúncio com ID dinâmico
     {
-      path: '/editar-anuncio',
-      name: 'Editar-Anuncio',
+      path: '/editar-anuncio/:id',  // Modificado para receber o parâmetro ID
+      name: 'EditarAnuncio',
       component: EditarAnuncio,
+      props: true,  // Permite que o parâmetro `id` seja passado como props
     },
   ],
 });

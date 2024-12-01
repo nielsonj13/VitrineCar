@@ -57,11 +57,9 @@ class DAOService {
     try {
       const querySnapshot = await getDocs(this.collectionRef);
       const documents = [];
-
       querySnapshot.forEach((doc) => {
         documents.push({ id: doc.id, ...doc.data() });
       });
-
       return documents;
     } catch (error) {
       console.error("Erro ao buscar documentos: ", error);
@@ -74,33 +72,14 @@ class DAOService {
     try {
       const docRef = doc(db, this.collectionRef.path, id);
       const docSnap = await getDoc(docRef);
-
       if (docSnap.exists()) {
-        return { id: docSnap.id, ...docSnap.data() }; // Retorna os dados do documento
+        return { id: docSnap.id, ...docSnap.data() };
       } else {
         throw new Error("Documento não encontrado!");
       }
     } catch (error) {
       console.error("Erro ao buscar documento: ", error);
       throw new Error("Erro ao buscar documento");
-    }
-  }
-
-  // Método para realizar uma busca com base em uma propriedade
-  async search(property, value) {
-    try {
-      const q = query(this.collectionRef, where(property, "==", value)); // Cria a consulta para a propriedade e valor fornecidos
-      const querySnapshot = await getDocs(q);
-      const documents = [];
-
-      querySnapshot.forEach((doc) => {
-        documents.push({ id: doc.id, ...doc.data() });
-      });
-
-      return documents;
-    } catch (error) {
-      console.error("Erro ao buscar documentos: ", error);
-      throw new Error("Erro ao buscar documentos");
     }
   }
 }
