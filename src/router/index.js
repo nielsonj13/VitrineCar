@@ -11,6 +11,7 @@ import TelaVeiculo from '@/views/TelaVeiculo.vue';
 import TelaFavoritos from '@/views/TelaFavoritos.vue';
 import TelaMinhaConta from '@/views/TelaMinhaConta.vue';
 import TelaMeusAnuncios from '@/views/TelaMeusAnuncios.vue';
+import EditarAnuncio from '@/views/EditarAnuncio.vue';
 
 
 const router = createRouter({
@@ -76,6 +77,11 @@ const router = createRouter({
       path: '/TelaMeusAnuncios',
       name: 'TelaMeusAnuncios',
       component: TelaMeusAnuncios,
+    },
+    {
+      path: '/editar-anuncio',
+      name: 'Editar-Anuncio',
+      component: EditarAnuncio,
     },
   ],
 });

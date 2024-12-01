@@ -82,142 +82,11 @@
   </div>
 </template>
 
-<style scoped>
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background-color: #f3f3f3;
-  }
-
-  .container {
-    max-width: 1300px; /* Aumentei a largura da div */
-    margin: 20px auto;
-    background-color: white;
-    border-radius: 10px;
-    padding: 20px;
-  }
-
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-
-  .content {
-    text-align: center;
-  }
-
-  h2 {
-    color: #5b3199;
-    margin-bottom: 20px;
-    font-size: 40px;
-    margin-left: 90px;
-  }
-
-  h3 {
-    color: #333;
-    margin-bottom: 10px;
-    font-size: 30px;
-  }
-
-  .form {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 30px; /* Aumentei a distância lateral entre os campos */
-  }
-
-  .form-group {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .form-group label {
-    font-weight: bold;
-    margin-bottom: 5px;
-  }
-
-  .form-group input, .form-group select {
-    padding: 12px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-  }
-
-  .form-group input {
-    font-size: 16px;
-  }
-
-  .input-valor {
-    font-size: 18px;
-    padding: 12px;
-  }
-
-  .opcionais {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 20px;
-    margin-bottom: 60px;
-  }
-
-  .opcional {
-    padding:10px;
-    border: 1px solid #94077f;
-    border-radius: 8px;
-    text-align: center;
-    cursor: pointer;
-  }
-
-  .opcional.active {
-    background-color: #5b3199;
-    color: white;
-    border: 1px solid #5b3199;
-  }
-
-  .upload-box {
-    border: 2px dashed #5b3199;
-    padding: 20px;
-    border-radius: 10px;
-    background-color: #f9f9f9;
-    color: #5b3199;
-    font-weight: bold;
-  }
-
-  .actions {
-  display: flex;
-  justify-content: space-between; /* Alinha o botão de voltar à esquerda e os outros à direita */
-  margin-top: 20px;
-  }
-
-  button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-  }
-
-  .btn-next, .btn-finish {
-    margin-left: auto; /* Empurra os botões para a direita */
-  }
-
-  .btn-next {
-    background-color: #5b3199;
-    color: white;
-  }
-
-  .btn-back {
-    background-color: #ccc;
-  }
-
-  .btn-finish {
-    background-color: #28a745;
-    color: white;
-  }
-
-</style>
-
-
 <script>
-import Navbar from '../components/NavBar.vue';
+import Navbar from "../components/NavBar.vue";
+import DAOService from "@/Services/DAOService";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { storage } from "../firebase"; // Importa o Firebase Storage
 
 export default {
   name: "CriarAnuncio",
@@ -231,9 +100,9 @@ export default {
         marca: "",
         modelo: "",
         anoModelo: "",
-        anoFabricacao: "",  
-        km: "",             
-        valor: "",          
+        anoFabricacao: "",
+        km: "",
+        valor: "",
         cor: "",
         opcionais: [],
         imagens: [],
@@ -250,7 +119,12 @@ export default {
         "Tração 4X4",
         "Desembaçador Traseiro",
       ],
+      daoService: null, // Instância do DAOService
     };
+  },
+  created() {
+    // Inicializa a instância do DAOService
+    this.daoService = new DAOService("anuncios");
   },
   methods: {
     avancarEtapa() {
@@ -264,15 +138,206 @@ export default {
       if (index === -1) this.anuncio.opcionais.push(opcional);
       else this.anuncio.opcionais.splice(index, 1);
     },
-    uploadImagens(event) {
+    async uploadImagens(event) {
       const files = event.target.files;
-      this.anuncio.imagens = [...files];
+      const promises = [];
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+
+        // Cria uma referência ao arquivo no Firebase Storage
+        const storageRef = ref(storage, `images/${file.name}`);
+
+        // Faz o upload do arquivo
+        const uploadTask = uploadBytesResumable(storageRef, file);
+
+        promises.push(
+          new Promise((resolve, reject) => {
+            uploadTask.on(
+              "state_changed",
+              (snapshot) => {
+                // Aqui você pode mostrar o progresso do upload se quiser
+              },
+              (error) => reject(error),
+              async () => {
+                // Após o upload, obtenha a URL de download
+                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                this.anuncio.imagens.push(downloadURL); // Salva a URL da imagem no anúncio
+                resolve();
+              }
+            );
+          })
+        );
+      }
+
+      // Aguarda que todos os arquivos sejam carregados
+      await Promise.all(promises);
+      console.log("Imagens carregadas:", this.anuncio.imagens);
     },
-    finalizarAnuncio() {
-      alert("Anúncio finalizado com sucesso!");
-      console.log(this.anuncio);
+
+    async finalizarAnuncio() {
+      try {
+        // Verifica se todos os campos obrigatórios estão preenchidos
+        if (!this.anuncio.marca || !this.anuncio.modelo || !this.anuncio.valor) {
+          alert("Por favor, preencha todos os campos obrigatórios.");
+          return;
+        }
+
+        // Salva o anúncio no Firestore
+        const id = await this.daoService.insert(this.anuncio);
+        alert(`Anúncio finalizado com sucesso! ID: ${id}`);
+        console.log(this.anuncio);
+
+        // Resetar o formulário após a finalização
+        this.resetarFormulario();
+      } catch (error) {
+        console.error("Erro ao salvar o anúncio:", error);
+        alert("Erro ao finalizar o anúncio. Verifique os logs.");
+      }
+    },
+
+    resetarFormulario() {
+      this.etapa = 1;
+      this.anuncio = {
+        marca: "",
+        modelo: "",
+        anoModelo: "",
+        anoFabricacao: "",
+        km: "",
+        valor: "",
+        cor: "",
+        opcionais: [],
+        imagens: [],
+      };
     },
   },
 };
 </script>
 
+<style scoped>
+/* Seu CSS original fornecido */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f3f3f3;
+}
+
+.container {
+  max-width: 1300px;
+  margin: 20px auto;
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.content {
+  text-align: center;
+}
+
+h2 {
+  color: #5b3199;
+  margin-bottom: 20px;
+  font-size: 40px;
+  margin-left: 90px;
+}
+
+h3 {
+  color: #333;
+  margin-bottom: 10px;
+  font-size: 30px;
+}
+
+.form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.form-group input,
+.form-group select {
+  padding: 12px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.form-group input {
+  font-size: 16px;
+}
+
+.input-valor {
+  font-size: 18px;
+  padding: 12px;
+}
+
+.opcionais {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin-bottom: 60px;
+}
+
+.opcional {
+  padding: 10px;
+  border: 1px solid #94077f;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.opcional.active {
+  background-color: #5b3199;
+  color: white;
+  border: 1px solid #5b3199;
+}
+
+.upload-box {
+  border: 2px dashed #5b3199;
+  padding: 20px;
+  border-radius: 10px;
+  background-color: #f9f9f9;
+  color: #5b3199;
+  font-weight: bold;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn-next,
+.btn-finish {
+  margin-left: auto;
+}
+
+.btn-next {
+  background-color: #5b3199;
+  color: white;
+}
+
+.btn-back {
+  background-color: #ccc;
+}
+
+.btn-finish {
+  background-color: #28a745;
+  color: white;
+}
+</style>
