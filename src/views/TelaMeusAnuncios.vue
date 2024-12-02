@@ -3,14 +3,16 @@
   <Navbar />
   <div class="container">
     
-  
     <!-- Conteúdo Principal -->
     <div class="content">
       <h2>Meus Anúncios</h2>
-  
+
+   
+
       <div class="anuncios-container">
         <!-- Itera sobre os anúncios e exibe um cartão para cada anúncio -->
         <div v-for="anuncio in anuncios" :key="anuncio.id" class="card">
+          
           <img :src="anuncio.imagens[0]" alt="Imagem do Carro" class="car-image" />
           <div class="car-info">
             <h3>{{ anuncio.marca }} {{ anuncio.modelo }}</h3>
@@ -19,11 +21,15 @@
           </div>
           <div class="card-actions">
             <button class="btn-ver">Ver anúncio</button>
-            <button class="btn-editar" @click="editarAnuncio(anuncio.id)">Editar anúncio</button>
-            <button class="btn-excluir" @click="excluirAnuncio(anuncio.id)">Excluir anúncio</button>
+            <button class="btn-editar" @click="editarAnuncio(anuncio.id)">
+              <i class="bi bi-pencil-fill"></i> Editar anúncio
+            </button>
+            <button class="btn-excluir" @click="excluirAnuncio(anuncio.id)">
+              <i class="bi bi-trash-fill"></i> Excluir anúncio
+            </button>
           </div>
         </div>
-  
+
         <!-- Botão de Criar Novo Anúncio -->
         <div class="new-card" @click="criarAnuncio">
           <div class="new-icon">+</div>
@@ -33,7 +39,7 @@
     </div>
   </div>
 </template>
-  
+
 <script>
 import Navbar from "../components/NavBar.vue";
 import DAOService from "@/Services/DAOService";  // Importe o seu DAOService
@@ -89,7 +95,7 @@ export default {
   },
 };
 </script>
-  
+
 <style scoped>
 /* Estilo Base */
 .container {
