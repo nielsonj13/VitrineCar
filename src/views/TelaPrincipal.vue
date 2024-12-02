@@ -58,17 +58,17 @@
       return {
         busca: '', // Campo de busca
         marcas: [
-          { nome: 'Fiat', img: 'public/logos/FIAT_logo.png' },
-          { nome: 'BMW', img: 'public/logos/BMW_logo.png' },
-          { nome: 'Nissan', img: 'public/logos/Nissan_logo.png' },
-          { nome: 'Toyota', img: 'public/logos/TOYOTA_logo.png' },
-          { nome: 'Renault', img: 'public/logos/RENAULT_logo.png' },
+          { nome: 'Fiat', img: '/logos/FIAT_logo.png' },
+          { nome: 'BMW', img: '/logos/BMW_logo.png' },
+          { nome: 'Nissan', img: '/logos/Nissan_logo.png' },
+          { nome: 'Toyota', img: '/logos/TOYOTA_logo.png' },
+          { nome: 'Renault', img: '/logos/RENAULT_logo.png' },
         ],
         categorias: [
-          { nome: 'SUV', img: 'public/carro/sw4.png' },
-          { nome: 'Picapes', img: 'public/carro/Ram-3500 1.png' },
-          { nome: 'Sedan', img: 'public/carro/corolla.png' },
-          { nome: 'Hatches', img: 'public/carro/golf.png' },
+          { nome: 'SUV', img: '/carro/sw4.png' },
+          { nome: 'Picapes', img: '/carro/Ram-3500 1.png' },
+          { nome: 'Sedan', img: '/carro/corolla.png' },
+          { nome: 'Hatches', img: '/carro/golf.png' },
         ],
       };
     },
