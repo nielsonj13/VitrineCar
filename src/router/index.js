@@ -78,10 +78,10 @@ const router = createRouter({
     },
     // Rota para editar o anúncio com ID dinâmico
     {
-      path: '/editar-anuncio/:id',  // Modificado para receber o parâmetro ID
+      path: '/editar-anuncio',
       name: 'EditarAnuncio',
       component: EditarAnuncio,
-      props: true,  // Permite que o parâmetro `id` seja passado como props
+      props: true,
     },
   ],
 });

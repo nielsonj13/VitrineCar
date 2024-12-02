@@ -2,7 +2,6 @@
   <Navbar />
   <h2>Editar Anúncio</h2>
   <div class="container">
-    <!-- Etapa 1: Preenchendo informações do veículo -->
     <div v-if="etapa === 1" class="content">
       <h3>Preencha as informações do veículo</h3>
       <div class="form">
@@ -45,7 +44,6 @@
       </div>
     </div>
 
-    <!-- Etapa 2: Seleção de opcionais -->
     <div v-else-if="etapa === 2" class="content">
       <h3>Informe os opcionais do veículo</h3>
       <div class="opcionais">
@@ -65,7 +63,6 @@
       </div>
     </div>
 
-    <!-- Etapa 3: Upload de imagens -->
     <div v-else-if="etapa === 3" class="content">
       <h3>Adicionar fotos do veículo</h3>
       <div class="upload-box">
@@ -86,7 +83,7 @@
 import Navbar from "../components/NavBar.vue";
 import DAOService from "@/Services/DAOService";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { storage } from "../firebase"; // Importa o Firebase Storage
+import { storage } from "../firebase"; 
 
 export default {
   name: "EditarAnuncio",
@@ -97,7 +94,7 @@ export default {
     return {
       etapa: 1,
       anuncio: {
-        id: null,  // ID do anúncio a ser editado
+        id: null,
         marca: "",
         modelo: "",
         anoModelo: "",
@@ -120,7 +117,7 @@ export default {
         "Tração 4X4",
         "Desembaçador Traseiro",
       ],
-      daoService: null, // Instância do DAOService
+      daoService: null, 
     };
   },
   created() {
@@ -145,7 +142,7 @@ export default {
 
     // Carregar os dados do anúncio a ser editado
     async carregarAnuncio() {
-      const id = this.$route.params.id; // Supondo que o ID do anúncio seja passado pela rota
+      const id = this.$route.params.id;
       try {
         const anuncioData = await this.daoService.get(id);
         this.anuncio = anuncioData;
@@ -180,7 +177,7 @@ export default {
               async () => {
                 // Após o upload, obtenha a URL de download
                 const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                this.anuncio.imagens.push(downloadURL); // Salva a URL da imagem no anúncio
+                this.anuncio.imagens.push(downloadURL);
                 resolve();
               }
             );
@@ -220,7 +217,7 @@ export default {
     resetarFormulario() {
       this.etapa = 1;
       this.anuncio = {
-        id: null, // Limpa o ID após salvar
+        id: null, 
         marca: "",
         modelo: "",
         anoModelo: "",
@@ -237,7 +234,7 @@ export default {
 </script>
 
 <style scoped>
-/* Seu CSS original fornecido */
+
 body {
   margin: 0;
   font-family: Arial, sans-serif;

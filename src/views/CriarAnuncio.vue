@@ -2,7 +2,6 @@
   <Navbar />
   <h2>Criar Anúncio</h2>
   <div class="container">
-    <!-- Etapa 1: Preenchendo informações do veículo -->
     <div v-if="etapa === 1" class="content">
       <h3>Preencha as informações do veículo</h3>
       <div class="form">
@@ -45,7 +44,6 @@
       </div>
     </div>
 
-    <!-- Etapa 2: Seleção de opcionais -->
     <div v-else-if="etapa === 2" class="content">
       <h3>Informe os opcionais do veículo</h3>
       <div class="opcionais">
@@ -65,7 +63,6 @@
       </div>
     </div>
 
-    <!-- Etapa 3: Upload de imagens -->
     <div v-else-if="etapa === 3" class="content">
       <h3>Adicionar fotos do veículo</h3>
       <div class="upload-box">
@@ -86,7 +83,7 @@
 import Navbar from "../components/NavBar.vue";
 import DAOService from "@/Services/DAOService";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { storage } from "../firebase"; // Importa o Firebase Storage
+import { storage } from "../firebase"; 
 
 export default {
   name: "CriarAnuncio",
@@ -119,7 +116,7 @@ export default {
         "Tração 4X4",
         "Desembaçador Traseiro",
       ],
-      daoService: null, // Instância do DAOService
+      daoService: null, 
     };
   },
   created() {
@@ -188,7 +185,7 @@ export default {
         alert(`Anúncio finalizado com sucesso! ID: ${id}`);
         console.log(this.anuncio);
 
-        this.$router.push("/TelaMeusAnuncios"); // Redireciona para a tela "Meus Anúncios"
+        this.$router.push("/TelaMeusAnuncios");
 
         // Resetar o formulário após a finalização
         this.resetarFormulario();
@@ -217,7 +214,6 @@ export default {
 </script>
 
 <style scoped>
-/* Seu CSS original fornecido */
 body {
   margin: 0;
   font-family: Arial, sans-serif;

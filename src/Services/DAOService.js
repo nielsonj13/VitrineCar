@@ -1,4 +1,4 @@
-import { db } from "../firebase"; // Ajuste para importar corretamente
+import { db } from "../firebase"; 
 import {
   collection,
   addDoc,
@@ -23,7 +23,7 @@ class DAOService {
   async insert(object) {
     try {
       const docRef = await addDoc(this.collectionRef, object);
-      return docRef.id; // Retorna o ID do documento criado
+      return docRef.id; 
     } catch (error) {
       console.error("Erro ao adicionar documento: ", error);
       throw new Error("Erro ao adicionar documento");
@@ -84,4 +84,4 @@ class DAOService {
   }
 }
 
-export default DAOService; // Certifique-se de que a exportação é padrão
+export default DAOService;
