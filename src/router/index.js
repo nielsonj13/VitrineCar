@@ -78,7 +78,7 @@ const router = createRouter({
     },
     // Rota para editar o anúncio com ID dinâmico
     {
-      path: '/editar-anuncio',
+      path: '/editar-anuncio/:id',
       name: 'EditarAnuncio',
       component: EditarAnuncio,
       props: true,
