@@ -1,25 +1,27 @@
 <template>
   <div class="fundo">
-    <!-- Importando a Navbar -->
     <Navbar />
-  
-    <!-- Conteúdo da página -->
-    <div class="container py-5">
-      <!-- Título -->
-      <div class="header text-center mb-4">
-        <h2 class="titulo-roxo font-weight-bold">Favoritos</h2>
-      </div>
-  
-      <!-- Cartões de veículos -->
-      <div class="row">
-        <div class="col-md-4 mb-4" v-for="(carro, index) in carros" :key="index">
-          <div class="card shadow-sm">
-            <img src="/public/carro/corolla.png" alt="Teste Fiat Pulse" class="card-img-top rounded">
-            <div class="card-body text-center">
-              <h3 class="card-title">{{ carro.nome }}</h3>
-              <p class="card-text">{{ carro.descricao }}</p>
-              <p class="preco h5">{{ carro.preco }}</p>
-              <button class="btn btn-primary btn-block">Ver anúncio</button>
+    <div class="container">
+      <div class="content">
+        <h2 class="titulo-roxo text-center mb-4">Favoritos</h2>
+
+        <div class="anuncios-container">
+          <!-- Itera sobre os anúncios e exibe um cartão para cada anúncio -->
+          <div v-for="carro in carros" :key="carro.id" class="card">
+            <img :src="carro.imagens[0]" alt="Imagem do Carro" class="car-image" />
+            <div class="car-info">
+              <div class="title-container">
+                <h3>{{ carro.marca }} {{ carro.modelo }}</h3>
+                <i
+                  :class="carro.favorito ? 'bi bi-star-fill' : 'bi bi-star'"
+                  class="favorite-icon"
+                ></i>
+              </div>
+              <p>R$ {{ carro.valor }}</p>
+              <span>{{ carro.anoModelo }}/{{ carro.anoFabricacao }}</span>
+            </div>
+            <div class="card-actions">
+              <button class="btn-ver">Ver anúncio</button>
             </div>
           </div>
         </div>
@@ -27,89 +29,124 @@
     </div>
   </div>
 </template>
-  
+
 <script>
-import Navbar from '../components/NavBar.vue';
-  
+import Navbar from "../components/NavBar.vue";
+import FavoritosService from "@/Services/FavoritosService";
+
 export default {
-  name: 'Favoritos',
+  name: "Favoritos",
   components: {
     Navbar,
   },
   data() {
     return {
-      carros: [
-        {
-          nome: 'Corolla',
-          descricao: '2.0 hybrid Automático',
-          preco: 'R$ 93.990',
-        },
-        // Você pode adicionar mais carros aqui
-      ],
+      carros: FavoritosService.getFavoritos(),
     };
   },
 };
 </script>
-  
+
 <style scoped>
-.fundo {
-  background-color: #f8f9fa;
-  margin: 0 auto;
-  width: 100%;
-}
-
+/* Estilo Base */
 .container {
-  max-width: 1200px;
+  max-width: 80%;
   margin: 0 auto;
-  background-color: #f8f9fa;
+  padding: 20px 0;
 }
 
-.header h2 {
-  font-size: 32px;
-  color: #531b76;  /* Cor roxa definida */
+.content {
+  text-align: center;
+}
+
+h2.titulo-roxo {
+  color: #5b3199; /* Cor roxa padrão */
   margin-bottom: 20px;
-  font-weight: bold;
 }
 
-.card-img-top {
-  height: 200px;
+.anuncios-container {
+  display: flex;
+  gap: 20px; /* Espaçamento horizontal e vertical entre os cards */
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.card {
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  width: 250px;
+  text-align: center;
+  padding: 15px;
+}
+
+.card img {
+  width: 100%;
+  height: 150px;
   object-fit: cover;
   border-radius: 8px;
 }
 
-.card-body {
-  padding: 1.25rem;
+.car-info {
+  text-align: left;
 }
 
-.card-title {
-  font-size: 1.25rem;
+.title-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title-container h3 {
+  margin: 10px 0;
   color: #333;
+  flex: 1;
+  text-align: left;
+}
+
+.favorite-icon {
+  cursor: pointer;
+  font-size: 30px; /* Aumenta o tamanho da estrela */
+  color: #ddd; /* Cor padrão */
+  transition: transform 0.3s ease;
+}
+
+.favorite-icon.bi-star-fill {
+  color: #5b3199; /* Cor roxa ao favoritar */
+}
+
+.favorite-icon:hover {
+  transform: scale(1.2); /* Aumenta levemente ao passar o mouse */
+}
+
+.car-info p {
+  margin: 0;
+  color: #5b3199;
   font-weight: bold;
 }
 
-.card-text {
-  font-size: 1rem;
+.car-info span {
+  font-size: 14px;
   color: #666;
 }
 
-.preco {
-  color: #531b76;  /* Cor roxa definida */
-  font-weight: bold;
+.card-actions {
+  margin-top: 10px;
 }
 
-.btn-primary {
-  background-color: #531b76;
-  border-color: #531b76;
+.card-actions button {
+  display: block;
+  width: 100%;
+  margin: 5px 0;
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
 }
 
-.btn-primary:hover {
-  background-color: #4a287d;
-  border-color: #4a287d;
-}
-
-@media (max-width: 767px) {
-  .card-img-top {
-    height: 180px;
-  }
+.btn-ver {
+  background-color: #5b3199;
+  color: white;
 }
 </style>

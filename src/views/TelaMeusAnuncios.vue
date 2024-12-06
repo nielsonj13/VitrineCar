@@ -2,20 +2,23 @@
   <!-- Navbar -->
   <Navbar />
   <div class="container">
-    
     <!-- Conteúdo Principal -->
     <div class="content">
       <h2>Meus Anúncios</h2>
 
-   
-
       <div class="anuncios-container">
         <!-- Itera sobre os anúncios e exibe um cartão para cada anúncio -->
         <div v-for="anuncio in anuncios" :key="anuncio.id" class="card">
-          
           <img :src="anuncio.imagens[0]" alt="Imagem do Carro" class="car-image" />
           <div class="car-info">
-            <h3>{{ anuncio.marca }} {{ anuncio.modelo }}</h3>
+            <div class="title-container">
+              <h3>{{ anuncio.marca }} {{ anuncio.modelo }}</h3>
+              <i
+                :class="anuncio.favorito ? 'bi bi-star-fill' : 'bi bi-star'"
+                class="favorite-icon"
+                @click="toggleFavorito(anuncio)"
+              ></i>
+            </div>
             <p>R$ {{ anuncio.valor }}</p>
             <span>{{ anuncio.anoModelo }}/{{ anuncio.anoFabricacao }}</span>
           </div>
@@ -42,7 +45,8 @@
 
 <script>
 import Navbar from "../components/NavBar.vue";
-import DAOService from "@/Services/DAOService";  // Importe o seu DAOService
+import DAOService from "@/Services/DAOService";
+import FavoritosService from "@/Services/FavoritosService"; // Importando o serviço de favoritos
 
 export default {
   name: "MeusAnuncios",
@@ -51,41 +55,53 @@ export default {
   },
   data() {
     return {
-      anuncios: [],  // Array para armazenar os anúncios
-      daoService: null,  // Instância do DAOService
+      anuncios: [],
+      daoService: null,
     };
   },
   created() {
-    // Inicializa o DAOService e carrega os anúncios
     this.daoService = new DAOService("anuncios");
     this.carregarAnuncios();
   },
   methods: {
-    // Método para carregar os anúncios
     async carregarAnuncios() {
       try {
-        this.anuncios = await this.daoService.getAll();  // Chama o método getAll para buscar todos os anúncios
+        this.anuncios = await this.daoService.getAll();
       } catch (error) {
         console.error("Erro ao carregar anúncios:", error);
         alert("Erro ao carregar os anúncios.");
       }
     },
 
-    // Método para navegar para a tela de criação de anúncio
+    toggleFavorito(anuncio) {
+      anuncio.favorito = !anuncio.favorito;
+      if (anuncio.favorito) {
+        FavoritosService.adicionarFavorito(anuncio); // Adiciona aos favoritos
+      } else {
+        FavoritosService.removerFavorito(anuncio.id); // Remove dos favoritos
+      }
+
+      // Atualiza no banco de dados (opcional)
+      try {
+        this.daoService.update(anuncio.id, { favorito: anuncio.favorito });
+      } catch (error) {
+        console.error("Erro ao atualizar favorito:", error);
+        alert("Erro ao atualizar o favorito.");
+      }
+    },
+
     criarAnuncio() {
       this.$router.push("/criar-anuncio");
     },
 
-    // Método para editar o anúncio
     editarAnuncio(id) {
-      this.$router.push(`/editar-anuncio/${id}`);  // Redireciona para a tela de edição com o ID do anúncio
+      this.$router.push(`/editar-anuncio/${id}`);
     },
 
-    // Método para excluir o anúncio
     async excluirAnuncio(id) {
       try {
-        await this.daoService.delete(id);  // Exclui o anúncio do Firebase
-        this.carregarAnuncios();  // Recarrega a lista de anúncios após a exclusão
+        await this.daoService.delete(id);
+        this.carregarAnuncios();
         alert("Anúncio excluído com sucesso!");
       } catch (error) {
         console.error("Erro ao excluir anúncio:", error);
@@ -136,9 +152,36 @@ h2 {
   border-radius: 8px;
 }
 
-.car-info h3 {
+.car-info {
+  text-align: left;
+}
+
+.title-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title-container h3 {
   margin: 10px 0;
   color: #333;
+  flex: 1;
+  text-align: left;
+}
+
+.favorite-icon {
+  cursor: pointer;
+  font-size: 30px; /* Aumenta o tamanho da estrela */
+  color: #ddd; /* Cor padrão */
+  transition: transform 0.3s ease;
+}
+
+.favorite-icon.bi-star-fill {
+  color: #5b3199; /* Cor roxa ao favoritar */
+}
+
+.favorite-icon:hover {
+  transform: scale(1.2); /* Aumenta levemente ao passar o mouse */
 }
 
 .car-info p {
