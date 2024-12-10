@@ -13,6 +13,8 @@ import TelaMinhaConta from '@/views/TelaMinhaConta.vue';
 import TelaMeusAnuncios from '@/views/TelaMeusAnuncios.vue';
 import EditarAnuncio from '@/views/EditarAnuncio.vue';
 
+// https://vitrinecar-71a27.web.app
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
