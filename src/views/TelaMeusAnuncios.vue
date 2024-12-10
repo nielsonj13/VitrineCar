@@ -9,7 +9,13 @@
       <div class="anuncios-container">
         <!-- Itera sobre os anúncios e exibe um cartão para cada anúncio -->
         <div v-for="anuncio in anuncios" :key="anuncio.id" class="card">
-          <img :src="anuncio.imagens[0]" alt="Imagem do Carro" class="car-image" />
+          <!-- Exibe a imagem do veículo dependendo do modelo -->
+          <img v-if="anuncio.modelo === 'Pulse'" src="https://img.olx.com.br/images/57/577487211134112.jpg" alt="Fiat Pulse" class="img-fluid" />
+          <img v-else-if="anuncio.modelo === 'Macan'" src="https://bocamafrapremium.com.br/wp-content/uploads/2024/08/fdccff4b83304f8ba26aed5dc8af3951_1709324197638.jpg" alt="Ford Fiesta" class="img-fluid" />
+          <img v-else-if="anuncio.modelo === 'Compass'" src="https://carroesporteclube.com.br/wp-content/uploads/2021/05/Jeep-Compass-Longitude-2022-foto-Thiago-Ventura-Carro-Esporte-Clube7.jpg" alt="Chevrolet Onix" class="img-fluid" />
+          <img v-else-if="anuncio.modelo === 'celta'" src="" alt="Chevrolet Onix" class="img-fluid" />
+          <!-- Aqui você pode adicionar mais veículos e suas imagens -->
+
           <div class="car-info">
             <div class="title-container">
               <h3>{{ anuncio.marca }} {{ anuncio.modelo }}</h3>
@@ -67,6 +73,17 @@ export default {
     async carregarAnuncios() {
       try {
         this.anuncios = await this.daoService.getAll();
+        // Atribuindo a imagem conforme o modelo
+        this.anuncios.forEach(anuncio => {
+          if (anuncio.modelo === 'Fiat Pulse') {
+            anuncio.imagem = "https://img.olx.com.br/images/57/577487211134112.jpg";
+          } else if (anuncio.modelo === 'Ford Fiesta') {
+            anuncio.imagem = "https://img.olx.com.br/images/57/577487211134113.jpg";
+          } else if (anuncio.modelo === 'Chevrolet Onix') {
+            anuncio.imagem = "https://img.olx.com.br/images/57/577487211134114.jpg";
+          }
+          // Adicione mais condições conforme necessário
+        });
       } catch (error) {
         console.error("Erro ao carregar anúncios:", error);
         alert("Erro ao carregar os anúncios.");
