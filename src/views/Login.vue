@@ -80,7 +80,7 @@ body {
 /* Container principal ocupando a tela inteira */
 .container {
   display: flex;
-  width: 100vw;
+  width: 80%;
   height: 100vh;
   box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
   overflow: hidden;
@@ -90,7 +90,7 @@ body {
 .image-section {
   background: url('/public/logos/imagem_login.png') no-repeat center center;
   background-size: cover; /* Ajusta a imagem para cobrir toda a área */
-  width: 50%;
+  width: 70%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -102,7 +102,8 @@ body {
 
 /* Área de login */
 .login-section {
-  width: 50%;
+  width: 40%;
+  height: 100%;
   background-color: #FFFFFF;
   display: flex;
   flex-direction: column;
