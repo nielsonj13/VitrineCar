@@ -82,6 +82,23 @@ class DAOService {
       throw new Error("Erro ao buscar documento");
     }
   }
+
+  // Método para buscar documentos com base em um filtro
+async searchByField(field, value) {
+  try {
+    const q = query(this.collectionRef, where(field, "==", value));
+    const querySnapshot = await getDocs(q);
+    const documents = [];
+    querySnapshot.forEach((doc) => {
+      documents.push({ id: doc.id, ...doc.data() });
+    });
+    return documents;
+  } catch (error) {
+    console.error("Erro ao buscar documentos: ", error);
+    throw new Error("Erro ao buscar documentos");
+  }
+}
+
 }
 
 export default DAOService;

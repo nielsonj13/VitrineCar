@@ -75,7 +75,16 @@ export default {
   },
   methods: {
     buscarOfertas() {
-      alert(`Buscando por: ${this.busca}`);
+      // Verifica se o usuário inseriu algum texto
+      if (this.busca.trim()) {
+        // Redireciona para a tela de resultados com o termo de busca
+        this.$router.push({
+          name: 'TelaResultados',
+          query: { termo: this.busca }
+        });
+      } else {
+        alert('Por favor, informe o nome ou a marca do veículo.');
+      }
     },
   },
 };

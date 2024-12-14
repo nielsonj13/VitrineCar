@@ -12,6 +12,7 @@ import TelaFavoritos from '@/views/TelaFavoritos.vue';
 import TelaMinhaConta from '@/views/TelaMinhaConta.vue';
 import TelaMeusAnuncios from '@/views/TelaMeusAnuncios.vue';
 import EditarAnuncio from '@/views/EditarAnuncio.vue';
+import TelaResultados from '@/views/TelaResultados.vue';
 
 // https://vitrinecar-71a27.web.app
 
@@ -77,6 +78,12 @@ const router = createRouter({
       path: '/TelaMeusAnuncios',
       name: 'TelaMeusAnuncios',
       component: TelaMeusAnuncios,
+    },
+    {
+      path: '/TelaResultados',
+      name: 'TelaResultados',
+      component: TelaResultados,
+      props: true,
     },
     // Rota para editar o anúncio com ID dinâmico
     {
