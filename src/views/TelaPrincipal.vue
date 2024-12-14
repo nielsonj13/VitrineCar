@@ -19,7 +19,6 @@
 
     <!-- Seção de Marcas e Categorias -->
     <div class="brands-categories">
-      <!-- Principais Marcas -->
       <div class="brands">
         <h3>Principais Marcas</h3>
         <div class="brand-logos">
@@ -33,7 +32,6 @@
         </div>
       </div>
 
-      <!-- Categorias -->
       <div class="categories">
         <h3>Categorias</h3>
         <div class="category-logos">
@@ -48,47 +46,44 @@
 </template>
 
 <script>
-import Navbar from '../components/NavBar.vue'; // Caminho atualizado
+import Navbar from "../components/NavBar.vue";
 
 export default {
-  name: 'BuscarVeiculo',
+  name: "BuscarVeiculo",
   components: {
-    Navbar, // Importa o componente Navbar
+    Navbar,
   },
   data() {
     return {
-      busca: '', // Campo de busca
+      busca: "",
       marcas: [
-        { nome: 'Fiat', img: '/logos/FIAT_logo.png' },
-        { nome: 'BMW', img: '/logos/BMW_logo.png' },
-        { nome: 'Nissan', img: '/logos/Nissan_logo.png' },
-        { nome: 'Toyota', img: '/logos/TOYOTA_logo.png' },
-        { nome: 'Renault', img: '/logos/RENAULT_logo.png' },
+        { nome: "Fiat", img: "/logos/FIAT_logo.png" },
+        { nome: "BMW", img: "/logos/BMW_logo.png" },
+        { nome: "Nissan", img: "/logos/Nissan_logo.png" },
+        { nome: "Toyota", img: "/logos/TOYOTA_logo.png" },
+        { nome: "Renault", img: "/logos/RENAULT_logo.png" },
       ],
       categorias: [
-        { nome: 'SUV', img: '/carro/sw4.png' },
-        { nome: 'Picapes', img: '/carro/Ram-3500 1.png' },
-        { nome: 'Sedan', img: '/carro/corolla.png' },
-        { nome: 'Hatches', img: '/carro/golf.png' },
+        { nome: "SUV", img: "/carro/sw4.png" },
+        { nome: "Picapes", img: "/carro/Ram-3500 1.png" },
+        { nome: "Sedan", img: "/carro/corolla.png" },
+        { nome: "Hatches", img: "/carro/golf.png" },
       ],
     };
   },
   methods: {
     buscarOfertas() {
-      // Verifica se o usuário inseriu algum texto
       if (this.busca.trim()) {
         // Redireciona para a tela de resultados com o termo de busca
-        this.$router.push({
-          name: 'TelaResultados',
-          query: { termo: this.busca }
-        });
+        this.$router.push({ name: "TelaResultados", query: { termo: this.busca } });
       } else {
-        alert('Por favor, informe o nome ou a marca do veículo.');
+        alert("Por favor, digite o nome ou modelo do veículo!");
       }
     },
   },
 };
 </script>
+
 
 <style scoped>
 /* Estilos gerais */

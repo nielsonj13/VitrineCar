@@ -3,64 +3,25 @@
     <!-- Navbar -->
     <Navbar />
     <div class="container">
-      <!-- Conteúdo Principal -->
       <div class="content">
         <h2>Resultados da sua Busca</h2>
         <p v-if="termo">Exibindo resultados para: <strong>{{ termo }}</strong></p>
 
         <div class="anuncios-container">
           <!-- Itera sobre os veículos encontrados e exibe os cartões -->
-          <div v-for="veiculo in veiculos" :key="veiculo.id" class="card">
+          <div v-for="anuncio in anuncios" :key="anuncio.id" class="card">
             <img
-              v-if="veiculo.modelo === 'Pulse'"
-              src="https://img.olx.com.br/images/57/577487211134112.jpg"
-              alt="Fiat Pulse"
-              class="img-fluid"
-            />
-            <img
-              v-else-if="veiculo.modelo === 'Macan'"
-              src="https://bocamafrapremium.com.br/wp-content/uploads/2024/08/fdccff4b83304f8ba26aed5dc8af3951_1709324197638.jpg"
-              alt="Ford Fiesta"
-              class="img-fluid"
-            />
-            <img
-              v-else-if="veiculo.modelo === 'Compass'"
-              src="https://carroesporteclube.com.br/wp-content/uploads/2021/05/Jeep-Compass-Longitude-2022-foto-Thiago-Ventura-Carro-Esporte-Clube7.jpg"
-              alt="Jeep Compass"
-              class="img-fluid"
-            />
-            <img
-              v-else-if="veiculo.modelo === 'Celta'"
-              src="https://media-repository-mobiauto.storage.googleapis.com/production/images/editorial/magazine/1686762966718.autowp.ru_chevrolet_celta_super_3-door_5.jpg"
-              alt="Chevrolet Celta"
-              class="img-fluid"
-            />
-            <img
-              v-else-if="veiculo.modelo === 'Gol'"
-              src="https://s2-autoesporte.glbimg.com/3EgKP_GD7pf7-BmNtHVJT6qg1HU=/0x0:1400x912/888x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_cf9d035bf26b4646b105bd958f32089d/internal_photos/bs/2022/R/M/K7kos5QGafxzSGEkFP7Q/dsc06181.jpg"
-              alt="Volkswagen Gol"
-              class="img-fluid"
-            />
-            <img
-              v-else-if="veiculo.modelo === 'Uno'"
-              src="https://img1.icarros.com/dbimg/imgmodelo/4/269_4.jpg"
-              alt="Fiat Uno"
+              :src="anuncio.imagem"
+              :alt="anuncio.modelo"
               class="img-fluid"
             />
 
             <!-- Informações do veículo -->
             <div class="car-info">
-            <div class="title-container">
               <h3>{{ anuncio.marca }} {{ anuncio.modelo }}</h3>
-              <i
-                :class="anuncio.favorito ? 'bi bi-star-fill' : 'bi bi-star'"
-                class="favorite-icon"
-                @click="toggleFavorito(anuncio)"
-              ></i>
+              <p>R$ {{ anuncio.valor }}</p>
+              <span>{{ anuncio.anoModelo }}/{{ anuncio.anoFabricacao }}</span>
             </div>
-            <p>R$ {{ anuncio.valor }}</p>
-            <span>{{ anuncio.anoModelo }}/{{ anuncio.anoFabricacao }}</span>
-          </div>
             <div class="card-actions">
               <button class="btn-ver">Ver mais detalhes</button>
             </div>
@@ -68,7 +29,7 @@
         </div>
 
         <!-- Mensagem caso não encontre veículos -->
-        <div v-if="veiculos.length === 0" class="no-results">
+        <div v-if="anuncios.length === 0" class="no-results">
           <p>Nenhum veículo encontrado para "{{ termo }}".</p>
         </div>
       </div>
@@ -80,7 +41,6 @@
 import Navbar from "../components/NavBar.vue";
 import DAOService from "@/Services/DAOService";
 
-
 export default {
   name: "TelaResultados",
   components: {
@@ -88,33 +48,43 @@ export default {
   },
   data() {
     return {
-      veiculos: [], // Veículos encontrados
+      anuncios: [], // Veículos encontrados
       termo: "", // Termo da busca
       daoService: null, // Instância do DAOService
     };
   },
   created() {
     this.termo = this.$route.query.termo || ""; // Obtem o termo de busca da query string
-    this.daoService = new DAOService("veiculos"); // Inicializa o DAOService na coleção 'veiculos'
+    this.daoService = new DAOService("anuncios"); // Inicializa o DAOService na coleção 'anuncios'
     this.carregarResultados();
   },
   methods: {
     async carregarResultados() {
-  try {
-    this.veiculos = await this.daoService.getAll(); // Busca todos os veículos
-    console.log("Todos os veículos carregados:", this.veiculos); // Verifica no console
-  } catch (error) {
-    console.error("Erro ao carregar veículos:", error);
-    alert("Erro ao carregar os veículos.");
-  }
-}
+      try {
+        const termoNormalizado = this.termo.trim().toLowerCase(); // Normaliza o termo para evitar problemas de maiúsculas/minúsculas
 
+        // Busca por modelo
+        const resultadosModelo = await this.daoService.searchByField("modelo", termoNormalizado);
+
+        // Busca por marca
+        const resultadosMarca = await this.daoService.searchByField("marca", termoNormalizado);
+
+        // Combina os resultados e remove duplicatas
+        const todosResultados = [...resultadosModelo, ...resultadosMarca];
+        this.anuncios = todosResultados.filter(
+          (item, index, self) => self.findIndex((v) => v.id === item.id) === index
+        );
+      } catch (error) {
+        console.error("Erro ao buscar veículos:", error);
+        alert("Erro ao buscar os veículos. Tente novamente.");
+      }
+    },
   },
 };
 </script>
 
 <style scoped>
-/* Copiado da tela de Meus Anúncios */
+/* Estilo Base */
 .container {
   max-width: 80%;
   margin: 0 auto;

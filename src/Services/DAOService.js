@@ -84,21 +84,54 @@ class DAOService {
   }
 
   // Método para buscar documentos com base em um filtro
-async searchByField(field, value) {
-  try {
-    const q = query(this.collectionRef, where(field, "==", value));
-    const querySnapshot = await getDocs(q);
-    const documents = [];
-    querySnapshot.forEach((doc) => {
-      documents.push({ id: doc.id, ...doc.data() });
-    });
-    return documents;
-  } catch (error) {
-    console.error("Erro ao buscar documentos: ", error);
-    throw new Error("Erro ao buscar documentos");
+  async searchByField(field, value) {
+    try {
+      const querySnapshot = await getDocs(this.collectionRef);
+      const normalizedValue = value.toLowerCase(); // Normaliza o termo para minúsculas
+      const documents = [];
+
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        if (data[field] && data[field].toLowerCase() === normalizedValue) {
+          documents.push({ id: doc.id, ...data });
+        }
+      });
+
+      return documents;
+    } catch (error) {
+      console.error("Erro ao buscar documentos:", error);
+      throw new Error("Erro ao buscar documentos");
+    }
+  }
+
+  // Método para buscar documentos baseados em um termo que pode estar em múltiplos campos
+  async searchByTerm(term) {
+    try {
+      const lowerTerm = term.toLowerCase(); // Normaliza o termo para minúsculas
+
+      // Consulta por campo "modelo"
+      const modeloQuery = query(this.collectionRef, where("modelo", "==", lowerTerm));
+      const modeloSnapshot = await getDocs(modeloQuery);
+
+      // Consulta por campo "marca"
+      const marcaQuery = query(this.collectionRef, where("marca", "==", lowerTerm));
+      const marcaSnapshot = await getDocs(marcaQuery);
+
+      // Combina os resultados de ambas as consultas
+      const results = [];
+      modeloSnapshot.forEach((doc) => results.push({ id: doc.id, ...doc.data() }));
+      marcaSnapshot.forEach((doc) => results.push({ id: doc.id, ...doc.data() }));
+
+      // Remove duplicatas (baseado no ID)
+      return results.filter(
+        (item, index, self) => self.findIndex((v) => v.id === item.id) === index
+      );
+    } catch (error) {
+      console.error("Erro ao buscar documentos por termo:", error);
+      throw new Error("Erro ao buscar documentos por termo");
+    }
   }
 }
 
-}
-
 export default DAOService;
+  
