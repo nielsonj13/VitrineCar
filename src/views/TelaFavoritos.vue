@@ -6,15 +6,22 @@
         <h2 class="titulo-roxo text-center mb-4">Favoritos</h2>
 
         <div class="anuncios-container">
-          <!-- Itera sobre os anúncios e exibe um cartão para cada anúncio -->
           <div v-for="carro in carros" :key="carro.id" class="card">
-            <img :src="carro.imagens[0]" alt="Imagem do Carro" class="car-image" />
+            <img v-if="carro.modelo === 'Pulse'" src="https://img.olx.com.br/images/57/577487211134112.jpg" alt="Fiat Pulse" class="img-fluid" />
+            <img v-else-if="carro.modelo === 'Macan'" src="https://bocamafrapremium.com.br/wp-content/uploads/2024/08/fdccff4b83304f8ba26aed5dc8af3951_1709324197638.jpg" alt="Ford Fiesta" class="img-fluid" />
+            <img v-else-if="carro.modelo === 'Compass'" src="https://carroesporteclube.com.br/wp-content/uploads/2021/05/Jeep-Compass-Longitude-2022-foto-Thiago-Ventura-Carro-Esporte-Clube7.jpg" alt="Chevrolet Onix" class="img-fluid" />
+            <img v-else-if="carro.modelo === 'Celta'" src="https://media-repository-mobiauto.storage.googleapis.com/production/images/editorial/magazine/1686762966718.autowp.ru_chevrolet_celta_super_3-door_5.jpg" alt="Chevrolet Celta" class="img-fluid" />
+            <img v-else-if="carro.modelo === 'Gol'" src="https://s2-autoesporte.glbimg.com/3EgKP_GD7pf7-BmNtHVJT6qg1HU=/0x0:1400x912/888x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_cf9d035bf26b4646b105bd958f32089d/internal_photos/bs/2022/R/M/K7kos5QGafxzSGEkFP7Q/dsc06181.jpg" alt="Volkswagen Gol" class="img-fluid" />
+            <img v-else-if="carro.modelo === 'Uno'" src="https://img1.icarros.com/dbimg/imgmodelo/4/269_4.jpg" alt="Fiat Uno" class="img-fluid" />
+          
+
             <div class="car-info">
               <div class="title-container">
                 <h3>{{ carro.marca }} {{ carro.modelo }}</h3>
                 <i
                   :class="carro.favorito ? 'bi bi-star-fill' : 'bi bi-star'"
                   class="favorite-icon"
+                  @click="toggleFavorito(carro)"
                 ></i>
               </div>
               <p>R$ {{ carro.valor }}</p>
@@ -44,11 +51,21 @@ export default {
       carros: FavoritosService.getFavoritos(),
     };
   },
+  methods: {
+    toggleFavorito(carro) {
+      carro.favorito = !carro.favorito;
+      if (carro.favorito) {
+        FavoritosService.adicionarFavorito(carro);
+      } else {
+        FavoritosService.removerFavorito(carro.id);
+      }
+    },
+  },
 };
 </script>
 
 <style scoped>
-/* Estilo Base */
+
 .container {
   max-width: 80%;
   margin: 0 auto;
@@ -60,13 +77,13 @@ export default {
 }
 
 h2.titulo-roxo {
-  color: #5b3199; /* Cor roxa padrão */
+  color: #5b3199;
   margin-bottom: 20px;
 }
 
 .anuncios-container {
   display: flex;
-  gap: 20px; /* Espaçamento horizontal e vertical entre os cards */
+  gap: 20px;
   justify-content: center;
   flex-wrap: wrap;
 }
@@ -106,17 +123,17 @@ h2.titulo-roxo {
 
 .favorite-icon {
   cursor: pointer;
-  font-size: 30px; /* Aumenta o tamanho da estrela */
-  color: #ddd; /* Cor padrão */
+  font-size: 30px; 
+  color: #ddd; 
   transition: transform 0.3s ease;
 }
 
 .favorite-icon.bi-star-fill {
-  color: #5b3199; /* Cor roxa ao favoritar */
+  color: #5b3199; 
 }
 
 .favorite-icon:hover {
-  transform: scale(1.2); /* Aumenta levemente ao passar o mouse */
+  transform: scale(1.2); 
 }
 
 .car-info p {
@@ -148,5 +165,20 @@ h2.titulo-roxo {
 .btn-ver {
   background-color: #5b3199;
   color: white;
+}
+
+
+/* Estilo existente + estilos de favorite-icon */
+.favorite-icon {
+  cursor: pointer;
+  font-size: 30px;
+  color: #ddd;
+  transition: transform 0.3s ease;
+}
+.favorite-icon.bi-star-fill {
+  color: #5b3199;
+}
+.favorite-icon:hover {
+  transform: scale(1.2);
 }
 </style>
