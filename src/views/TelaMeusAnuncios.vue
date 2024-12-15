@@ -16,6 +16,7 @@
           <img v-else-if="anuncio.modelo === 'celta'" src="https://media-repository-mobiauto.storage.googleapis.com/production/images/editorial/magazine/1686762966718.autowp.ru_chevrolet_celta_super_3-door_5.jpg" alt="Chevrolet Celta" class="img-fluid" />
           <img v-else-if="anuncio.modelo === 'gol'" src="https://s2-autoesporte.glbimg.com/3EgKP_GD7pf7-BmNtHVJT6qg1HU=/0x0:1400x912/888x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_cf9d035bf26b4646b105bd958f32089d/internal_photos/bs/2022/R/M/K7kos5QGafxzSGEkFP7Q/dsc06181.jpg" alt="Volkswagen Gol" class="img-fluid" />
           <img v-else-if="anuncio.modelo === 'uno'" src="https://img1.icarros.com/dbimg/imgmodelo/4/269_4.jpg" alt="Fiat Uno" class="img-fluid" />
+          <img v-else-if="anuncio.modelo === 'kicks'" src="https://cdn.motor1.com/images/mgl/QePGq9/s1/nissan-kicks-exclusive-2024.jpg" alt="Nissan Kicks" class="img-fluid" />
          
 
           <div class="car-info">

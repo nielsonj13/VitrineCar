@@ -32,6 +32,8 @@
             <option>Preto</option>
             <option>Branco</option>
             <option>Vermelho</option>
+            <option>Prata</option>
+            <option>Cinza</option>
           </select>
         </div>
         <div class="form-group">
