@@ -1,22 +1,35 @@
 class FavoritosService {
-    constructor() {
-      this.favoritos = []; // Lista de anúncios favoritos
-    }
-  
-    adicionarFavorito(anuncio) {
-      if (!this.favoritos.find((fav) => fav.id === anuncio.id)) {
-        this.favoritos.push(anuncio);
-      }
-    }
-  
-    removerFavorito(anuncioId) {
-      this.favoritos = this.favoritos.filter((fav) => fav.id !== anuncioId);
-    }
-  
-    getFavoritos() {
-      return this.favoritos;
+  constructor() {
+    this.favoritosKey = "favoritos";
+  }
+
+  // Recupera a lista de favoritos do localStorage
+  getFavoritos() {
+    const favoritos = localStorage.getItem(this.favoritosKey);
+    return favoritos ? JSON.parse(favoritos) : [];
+  }
+
+  // Adiciona um anúncio aos favoritos
+  adicionarFavorito(anuncio) {
+    const favoritos = this.getFavoritos();
+    if (!favoritos.find((item) => item.id === anuncio.id)) {
+      favoritos.push(anuncio);
+      localStorage.setItem(this.favoritosKey, JSON.stringify(favoritos));
     }
   }
-  
-  export default new FavoritosService();
-  
+
+  // Remove um anúncio dos favoritos
+  removerFavorito(id) {
+    const favoritos = this.getFavoritos();
+    const atualizados = favoritos.filter((item) => item.id !== id);
+    localStorage.setItem(this.favoritosKey, JSON.stringify(atualizados));
+  }
+
+  // Verifica se um anúncio está nos favoritos
+  isFavorito(id) {
+    const favoritos = this.getFavoritos();
+    return favoritos.some((item) => item.id === id);
+  }
+}
+
+export default new FavoritosService();
