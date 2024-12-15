@@ -124,92 +124,88 @@ export default {
     this.daoService = new DAOService("anuncios");
   },
   methods: {
-    avancarEtapa() {
-      if (this.etapa < 3) this.etapa++;
-    },
-    voltarEtapa() {
-      if (this.etapa > 1) this.etapa--;
-    },
-    toggleOpcional(opcional) {
-      const index = this.anuncio.opcionais.indexOf(opcional);
-      if (index === -1) this.anuncio.opcionais.push(opcional);
-      else this.anuncio.opcionais.splice(index, 1);
-    },
-    async uploadImagens(event) {
-      const files = event.target.files;
-      const promises = [];
-
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-
-        // Cria uma referência ao arquivo no Firebase Storage
-        const storageRef = ref(storage, `images/${file.name}`);
-
-        // Faz o upload do arquivo
-        const uploadTask = uploadBytesResumable(storageRef, file);
-
-        promises.push(
-          new Promise((resolve, reject) => {
-            uploadTask.on(
-              "state_changed",
-              (snapshot) => {
-                // Aqui você pode mostrar o progresso do upload se quiser
-              },
-              (error) => reject(error),
-              async () => {
-                // Após o upload, obtenha a URL de download
-                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                this.anuncio.imagens.push(downloadURL); // Salva a URL da imagem no anúncio
-                resolve();
-              }
-            );
-          })
-        );
-      }
-
-      // Aguarda que todos os arquivos sejam carregados
-      await Promise.all(promises);
-      console.log("Imagens carregadas:", this.anuncio.imagens);
-    },
-
-    async finalizarAnuncio() {
-      try {
-        // Verifica se todos os campos obrigatórios estão preenchidos
-        if (!this.anuncio.marca || !this.anuncio.modelo || !this.anuncio.valor) {
-          alert("Por favor, preencha todos os campos obrigatórios.");
-          return;
-        }
-
-        // Salva o anúncio no Firestore
-        const id = await this.daoService.insert(this.anuncio);
-        alert(`Anúncio finalizado com sucesso! ID: ${id}`);
-        console.log(this.anuncio);
-
-        this.$router.push("/TelaMeusAnuncios");
-
-        // Resetar o formulário após a finalização
-        this.resetarFormulario();
-      } catch (error) {
-        console.error("Erro ao salvar o anúncio:", error);
-        alert("Erro ao finalizar o anúncio. Verifique os logs.");
-      }
-    },
-
-    resetarFormulario() {
-      this.etapa = 1;
-      this.anuncio = {
-        marca: "",
-        modelo: "",
-        anoModelo: "",
-        anoFabricacao: "",
-        km: "",
-        valor: "",
-        cor: "",
-        opcionais: [],
-        imagens: [],
-      };
-    },
+  avancarEtapa() {
+    if (this.etapa < 3) this.etapa++;
   },
+  voltarEtapa() {
+    if (this.etapa > 1) this.etapa--;
+  },
+  toggleOpcional(opcional) {
+    const index = this.anuncio.opcionais.indexOf(opcional);
+    if (index === -1) this.anuncio.opcionais.push(opcional);
+    else this.anuncio.opcionais.splice(index, 1);
+  },
+  async uploadImagens(event) {
+    const files = event.target.files;
+    const promises = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const storageRef = ref(storage, `images/${file.name}`);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      promises.push(
+        new Promise((resolve, reject) => {
+          uploadTask.on(
+            "state_changed",
+            (snapshot) => {
+              // Progresso do upload
+            },
+            (error) => reject(error),
+            async () => {
+              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+              this.anuncio.imagens.push(downloadURL);
+              resolve();
+            }
+          );
+        })
+      );
+    }
+
+    await Promise.all(promises);
+    console.log("Imagens carregadas:", this.anuncio.imagens);
+  },
+
+  async finalizarAnuncio() {
+    try {
+      if (!this.anuncio.marca || !this.anuncio.modelo || !this.anuncio.valor) {
+        alert("Por favor, preencha todos os campos obrigatórios.");
+        return;
+      }
+
+      // Normaliza marca e modelo para minúsculas antes de salvar
+      this.anuncio.marca = this.anuncio.marca.trim().toLowerCase();
+      this.anuncio.modelo = this.anuncio.modelo.trim().toLowerCase();
+
+      const id = await this.daoService.insert(this.anuncio);
+      alert(`Anúncio finalizado com sucesso! ID: ${id}`);
+      console.log(this.anuncio);
+
+      this.$router.push("/TelaMeusAnuncios");
+
+      this.resetarFormulario();
+    } catch (error) {
+      console.error("Erro ao salvar o anúncio:", error);
+      alert("Erro ao finalizar o anúncio. Verifique os logs.");
+    }
+  },
+
+  resetarFormulario() {
+    this.etapa = 1;
+    this.anuncio = {
+      marca: "",
+      modelo: "",
+      anoModelo: "",
+      anoFabricacao: "",
+      km: "",
+      valor: "",
+      cor: "",
+      opcionais: [],
+      imagens: [],
+    };
+  },
+},
+
 };
 </script>
 

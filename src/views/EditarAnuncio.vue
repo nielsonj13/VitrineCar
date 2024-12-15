@@ -128,108 +128,107 @@ export default {
     this.carregarAnuncio();
   },
   methods: {
-    avancarEtapa() {
-      if (this.etapa < 3) this.etapa++;
-    },
-    voltarEtapa() {
-      if (this.etapa > 1) this.etapa--;
-    },
-    toggleOpcional(opcional) {
-      const index = this.anuncio.opcionais.indexOf(opcional);
-      if (index === -1) this.anuncio.opcionais.push(opcional);
-      else this.anuncio.opcionais.splice(index, 1);
-    },
-
-    // Carregar os dados do anúncio a ser editado
-    async carregarAnuncio() {
-      const id = this.$route.params.id;
-      try {
-        const anuncioData = await this.daoService.get(id);
-        this.anuncio = anuncioData;
-      } catch (error) {
-        console.error("Erro ao carregar anúncio:", error);
-        alert("Erro ao carregar anúncio.");
-      }
-    },
-
-    // Atualizar imagens para o Firebase
-    async uploadImagens(event) {
-      const files = event.target.files;
-      const promises = [];
-
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-
-        // Cria uma referência ao arquivo no Firebase Storage
-        const storageRef = ref(storage, `images/${file.name}`);
-
-        // Faz o upload do arquivo
-        const uploadTask = uploadBytesResumable(storageRef, file);
-
-        promises.push(
-          new Promise((resolve, reject) => {
-            uploadTask.on(
-              "state_changed",
-              (snapshot) => {
-                // Aqui você pode mostrar o progresso do upload se quiser
-              },
-              (error) => reject(error),
-              async () => {
-                // Após o upload, obtenha a URL de download
-                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                this.anuncio.imagens.push(downloadURL);
-                resolve();
-              }
-            );
-          })
-        );
-      }
-
-      // Aguarda que todos os arquivos sejam carregados
-      await Promise.all(promises);
-      console.log("Imagens carregadas:", this.anuncio.imagens);
-    },
-
-    // Salvar as alterações do anúncio
-    async salvarEdicao() {
-      try {
-        // Verifica se todos os campos obrigatórios estão preenchidos
-        if (!this.anuncio.marca || !this.anuncio.modelo || !this.anuncio.valor) {
-          alert("Por favor, preencha todos os campos obrigatórios.");
-          return;
-        }
-
-        // Atualiza o anúncio no Firestore
-        await this.daoService.update(this.anuncio.id, this.anuncio);
-        alert("Anúncio editado com sucesso!");
-        console.log(this.anuncio);
-
-        this.$router.push("/TelaMeusAnuncios"); // Redireciona para a tela "Meus Anúncios"
-        // Resetar o formulário após a edição
-        this.resetarFormulario();
-      } catch (error) {
-        console.error("Erro ao salvar as alterações:", error);
-        alert("Erro ao editar o anúncio. Verifique os logs.");
-      }
-    },
-
-    // Resetar os dados do formulário
-    resetarFormulario() {
-      this.etapa = 1;
-      this.anuncio = {
-        id: null, 
-        marca: "",
-        modelo: "",
-        anoModelo: "",
-        anoFabricacao: "",
-        km: "",
-        valor: "",
-        cor: "",
-        opcionais: [],
-        imagens: [],
-      };
-    },
+  avancarEtapa() {
+    if (this.etapa < 3) this.etapa++;
   },
+  voltarEtapa() {
+    if (this.etapa > 1) this.etapa--;
+  },
+  toggleOpcional(opcional) {
+    const index = this.anuncio.opcionais.indexOf(opcional);
+    if (index === -1) this.anuncio.opcionais.push(opcional);
+    else this.anuncio.opcionais.splice(index, 1);
+  },
+
+  async carregarAnuncio() {
+    const id = this.$route.params.id;
+    try {
+      const anuncioData = await this.daoService.get(id);
+      // Normalizar os campos carregados (se necessário)
+      this.anuncio = {
+        ...anuncioData,
+        marca: anuncioData.marca.trim().toLowerCase(), // ou .toUpperCase()
+        modelo: anuncioData.modelo.trim().toLowerCase(), // ou .toUpperCase()
+      };
+    } catch (error) {
+      console.error("Erro ao carregar anúncio:", error);
+      alert("Erro ao carregar anúncio.");
+    }
+  },
+
+  async uploadImagens(event) {
+    const files = event.target.files;
+    const promises = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const storageRef = ref(storage, `images/${file.name}`);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      promises.push(
+        new Promise((resolve, reject) => {
+          uploadTask.on(
+            "state_changed",
+            (snapshot) => {
+              // Progresso do upload
+            },
+            (error) => reject(error),
+            async () => {
+              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+              this.anuncio.imagens.push(downloadURL);
+              resolve();
+            }
+          );
+        })
+      );
+    }
+
+    await Promise.all(promises);
+    console.log("Imagens carregadas:", this.anuncio.imagens);
+  },
+
+  async salvarEdicao() {
+    try {
+      // Verifica se todos os campos obrigatórios estão preenchidos
+      if (!this.anuncio.marca || !this.anuncio.modelo || !this.anuncio.valor) {
+        alert("Por favor, preencha todos os campos obrigatórios.");
+        return;
+      }
+
+      // Normalizar os campos antes de salvar
+      this.anuncio.marca = this.anuncio.marca.trim().toLowerCase(); // ou .toUpperCase()
+      this.anuncio.modelo = this.anuncio.modelo.trim().toLowerCase(); // ou .toUpperCase()
+
+      await this.daoService.update(this.anuncio.id, this.anuncio);
+      alert("Anúncio editado com sucesso!");
+      console.log(this.anuncio);
+
+      this.$router.push("/TelaMeusAnuncios"); // Redireciona para a tela "Meus Anúncios"
+
+      this.resetarFormulario();
+    } catch (error) {
+      console.error("Erro ao salvar as alterações:", error);
+      alert("Erro ao editar o anúncio. Verifique os logs.");
+    }
+  },
+
+  resetarFormulario() {
+    this.etapa = 1;
+    this.anuncio = {
+      id: null,
+      marca: "",
+      modelo: "",
+      anoModelo: "",
+      anoFabricacao: "",
+      km: "",
+      valor: "",
+      cor: "",
+      opcionais: [],
+      imagens: [],
+    };
+  },
+},
+
 };
 </script>
 

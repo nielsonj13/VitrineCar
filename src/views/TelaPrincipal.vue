@@ -74,6 +74,9 @@ export default {
   methods: {
     buscarOfertas() {
       if (this.busca.trim()) {
+
+        const termoNormalizado = this.busca.trim().toLowerCase(); 
+
         // Redireciona para a tela de resultados com o termo de busca
         this.$router.push({ name: "TelaResultados", query: { termo: this.busca } });
       } else {
