@@ -4,7 +4,7 @@
       <img src="/public/logos/logo_vitrinecar.png" alt="VitrineCar" class="logo" />
     </router-link>
     <nav>
-      <router-link to="/comprar">Comprar</router-link>
+      <router-link to="/TelaAnuncios">Comprar</router-link>
       <router-link to="/TelaMeusAnuncios">Vender</router-link>
       <router-link to="/TelaFavoritos">Favoritos</router-link>
     </nav>

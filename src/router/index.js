@@ -13,6 +13,7 @@ import TelaMinhaConta from '@/views/TelaMinhaConta.vue';
 import TelaMeusAnuncios from '@/views/TelaMeusAnuncios.vue';
 import EditarAnuncio from '@/views/EditarAnuncio.vue';
 import TelaResultados from '@/views/TelaResultados.vue';
+import TelaAnuncios from '@/views/TelaAnuncios.vue';
 
 // https://vitrinecar-71a27.web.app
 
@@ -60,9 +61,10 @@ const router = createRouter({
       component: NavBar,
     },
     {
-      path: '/TelaVeiculo',
+      path: '/veiculo/:id',
       name: 'TelaVeiculo',
       component: TelaVeiculo,
+      props: true,
     },
     {
       path: '/TelaFavoritos',
@@ -78,6 +80,11 @@ const router = createRouter({
       path: '/TelaMeusAnuncios',
       name: 'TelaMeusAnuncios',
       component: TelaMeusAnuncios,
+    },
+    {
+      path: '/TelaAnuncios',
+      name: 'TelaAnuncios',
+      component: TelaAnuncios,
     },
     {
       path: '/TelaResultados',

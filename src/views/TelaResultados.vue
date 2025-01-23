@@ -29,7 +29,9 @@
               <span>{{ anuncio.anoModelo }}/{{ anuncio.anoFabricacao }}</span>
             </div>
             <div class="card-actions">
-              <button class="btn-ver">Ver Anuncio</button>
+              <button class="btn-ver"><router-link :to="`/veiculo/${anuncio.id}`" class="btn-ver">
+  Ver anúncio
+</router-link></button>
             </div>
           </div>
         </div>
@@ -148,7 +150,11 @@ h2 {
   align-items: center;
 }
 
-
+.btn-ver {
+  background-color: #5b3199;
+  color: white;
+  text-decoration: none;
+}
 
 .car-info p {
   margin: 0;
