@@ -3,7 +3,7 @@
   <h2>Editar Anúncio</h2>
   <div class="container">
     <div v-if="etapa === 1" class="content">
-      <h3>Preencha as informações do veículo</h3>
+      <h3>Atualize as informações do veículo</h3>
       <div class="form">
         <div class="form-group">
           <label>Marca</label>
@@ -37,6 +37,36 @@
           </select>
         </div>
         <div class="form-group">
+          <label>Câmbio</label>
+          <select v-model="anuncio.cambio">
+            <option value="">Escolha o tipo de câmbio</option>
+            <option>Automático</option>
+            <option>Manual</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Categoria</label>
+          <select v-model="anuncio.categoria">
+            <option value="">Escolha a categoria</option>
+            <option>Sedan</option>
+            <option>SUV</option>
+            <option>Picape</option>
+            <option>Hatch</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Combustível</label>
+          <select v-model="anuncio.combustivel">
+            <option value="">Escolha o tipo de combustível</option>
+            <option>Gasolina</option>
+            <option>Diesel</option>
+            <option>Etanol</option>
+            <option>Híbrido</option>
+            <option>Flex</option>
+            <option>Elétrico</option>
+          </select>
+        </div>
+        <div class="form-group">
           <label>Valor</label>
           <input type="text" v-model="anuncio.valor" placeholder="Digite o valor do veículo" class="input-valor" />
         </div>
@@ -47,7 +77,7 @@
     </div>
 
     <div v-else-if="etapa === 2" class="content">
-      <h3>Informe os opcionais do veículo</h3>
+      <h3>Atualize os opcionais do veículo</h3>
       <div class="opcionais">
         <div
           v-for="opcional in opcionais"

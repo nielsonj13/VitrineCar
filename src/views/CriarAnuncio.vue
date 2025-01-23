@@ -37,6 +37,36 @@
           </select>
         </div>
         <div class="form-group">
+          <label>Câmbio</label>
+          <select v-model="anuncio.cambio">
+            <option value="">Escolha o tipo de câmbio</option>
+            <option>Automático</option>
+            <option>Manual</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Categoria</label>
+          <select v-model="anuncio.categoria">
+            <option value="">Escolha a categoria</option>
+            <option>Sedan</option>
+            <option>SUV</option>
+            <option>Picape</option>
+            <option>Hatch</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Combustível</label>
+          <select v-model="anuncio.combustivel">
+            <option value="">Escolha o tipo de combustível</option>
+            <option>Gasolina</option>
+            <option>Diesel</option>
+            <option>Etanol</option>
+            <option>Híbrido</option>
+            <option>Flex</option>
+            <option>Elétrico</option>
+          </select>
+        </div>
+        <div class="form-group">
           <label>Valor</label>
           <input type="text" v-model="anuncio.valor" placeholder="Digite o valor do veículo" class="input-valor" />
         </div>
@@ -64,7 +94,7 @@
         <button class="btn-next" @click="avancarEtapa">Próximo</button>
       </div>
     </div>
-
+  
     <div v-else-if="etapa === 3" class="content">
       <h3>Adicionar fotos do veículo</h3>
       <div class="upload-box">

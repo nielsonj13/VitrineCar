@@ -24,6 +24,7 @@
             <p><i class="bi bi-speedometer2"></i> <strong>Km Rodado:</strong> {{ veiculo.km }}</p>
             <p><i class="bi bi-gear"></i> <strong>Câmbio:</strong> {{ veiculo.cambio }}</p>
             <p><i class="bi bi-fuel-pump"></i> <strong>Combustível:</strong> {{ veiculo.combustivel }}</p>
+            <p><i class="bi bi-gear"></i><strong>Categoria:</strong> {{ veiculo.categoria }}</p>
           </div>
           <p class="options"><strong>Opcionais:</strong> {{ veiculo.opcionais?.join(', ') }}</p>
         </div>
