@@ -11,19 +11,19 @@
         </div>
         <div class="form-group">
           <label>Modelo</label>
-          <input type="text" v-model="anuncio.modelo" placeholder="Digite o modelo" />
+          <input type="text" v-model="anuncio.modelo" placeholder="Digite o modelo" /> 
         </div>
         <div class="form-group">
           <label>Ano do Modelo</label>
-          <input type="text" v-model="anuncio.anoModelo" placeholder="Digite o ano do modelo" />
+          <input type="text" v-model="anuncio.anoModelo" placeholder="Digite o ano do modelo" @input="validateNumberInput('anoModelo')"  @blur="validateAnoModelo"/>
         </div>
         <div class="form-group">
           <label>Ano de Fabricação</label>
-          <input type="text" v-model="anuncio.anoFabricacao" placeholder="Digite o ano de fabricação" />
+          <input type="text" v-model="anuncio.anoFabricacao" placeholder="Digite o ano de fabricação"  @input="validateNumberInput('anoFabricacao')"  @blur="validateAnoModelo"/>
         </div>
         <div class="form-group">
           <label>Quilometragem (km)</label>
-          <input type="text" v-model="anuncio.km" placeholder="Digite a quilometragem" />
+          <input type="text" v-model="anuncio.km" placeholder="Digite a quilometragem" @input="validateNumberInput('km')"/>
         </div>
         <div class="form-group">
           <label>Cor</label>
@@ -68,7 +68,7 @@
         </div>
         <div class="form-group">
           <label>Valor</label>
-          <input type="text" v-model="anuncio.valor" placeholder="Digite o valor do veículo" class="input-valor" />
+          <input type="text" v-model="anuncio.valor" placeholder="Digite o valor do veículo" class="input-valor" @input="validateNumberInput('valor')"/>
         </div>
       </div>
       <div class="actions">
@@ -156,6 +156,19 @@ export default {
     this.daoService = new DAOService("anuncios");
   },
   methods: {
+  validateNumberInput(field) {
+    this.anuncio[field] = this.anuncio[field].replace(/\D/g, '');
+  },
+  validateAnoModelo() {
+    if (this.anuncio.anoFabricacao && this.anuncio.anoModelo) {
+      const anoFabricacao = parseInt(this.anuncio.anoFabricacao);
+      const anoModelo = parseInt(this.anuncio.anoModelo);
+      if (anoModelo < anoFabricacao || anoModelo > anoFabricacao + 1) {
+        alert('O ano do modelo deve ser igual ou no máximo 1 ano a mais que o ano de fabricação.');
+        this.anuncio.anoModelo = '';
+      }
+    }
+  },
   avancarEtapa() {
     if (this.etapa < 3) this.etapa++;
   },
