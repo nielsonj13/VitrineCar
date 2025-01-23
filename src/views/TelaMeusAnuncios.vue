@@ -32,9 +32,7 @@
             <span>{{ anuncio.anoModelo }}/{{ anuncio.anoFabricacao }}</span>
           </div>
           <div class="card-actions">
-            <button class="btn-ver"><router-link :to="`/veiculo/${anuncio.id}`" class="btn-ver">
-  Ver anúncio
-</router-link></button>
+            <button class="btn-ver"><router-link :to="`/veiculo/${anuncio.id}`" class="btn-ver">Ver anúncio</router-link></button>
             <button class="btn-editar" @click="editarAnuncio(anuncio.id)">
               <i class="bi bi-pencil-fill"></i> Editar anúncio
             </button>

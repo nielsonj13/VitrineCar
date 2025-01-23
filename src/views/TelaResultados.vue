@@ -29,9 +29,7 @@
               <span>{{ anuncio.anoModelo }}/{{ anuncio.anoFabricacao }}</span>
             </div>
             <div class="card-actions">
-              <button class="btn-ver"><router-link :to="`/veiculo/${anuncio.id}`" class="btn-ver">
-  Ver anúncio
-</router-link></button>
+              <button class="btn-ver"><router-link :to="`/veiculo/${anuncio.id}`" class="btn-ver">Ver anúncio</router-link></button>
             </div>
           </div>
         </div>
@@ -88,14 +86,22 @@ export default {
         alert("Erro ao buscar os veículos. Tente novamente.");
       }
     },
-    toggleFavorito(anuncio) {
-      anuncio.favorito = !anuncio.favorito;
-      if (anuncio.favorito) {
-        FavoritosService.adicionarFavorito(anuncio);
+    async toggleFavorito(veiculo) {
+      veiculo.favorito = !veiculo.favorito;
+      if (veiculo.favorito) {
+        FavoritosService.adicionarFavorito(veiculo);
       } else {
-        FavoritosService.removerFavorito(anuncio.id);
+        FavoritosService.removerFavorito(veiculo.id);
       }
-    },
+
+      // Atualiza no banco de dados (Firebase)
+      try {
+        await this.daoService.update(veiculo.id, { favorito: veiculo.favorito });
+      } catch (error) {
+        console.error("Erro ao atualizar favorito:", error);
+        alert("Erro ao atualizar o favorito.");
+      }
+    }
   },
 };
 </script>

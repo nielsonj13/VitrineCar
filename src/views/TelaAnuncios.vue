@@ -68,10 +68,7 @@
           console.error("Erro ao carregar anúncios:", error);
           alert("Erro ao carregar os anúncios.");
         }
-      },
-  
-
-      
+      },      
       toggleFavorito(anuncio) {
         anuncio.favorito = !anuncio.favorito;
         if (anuncio.favorito) {
@@ -79,6 +76,14 @@
         } else {
           FavoritosService.removerFavorito(anuncio.id); // Remove dos favoritos
         }
+
+      // Atualiza no banco de dados (opcional)
+      try {
+        this.daoService.update(anuncio.id, { favorito: anuncio.favorito });
+      } catch (error) {
+        console.error("Erro ao atualizar favorito:", error);
+        alert("Erro ao atualizar o favorito.");
+      }
       },
     },
   };

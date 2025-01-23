@@ -12,8 +12,9 @@
             <h1 class="vehicle-title">{{ veiculo.marca }} {{ veiculo.modelo }}</h1>
             <p class="vehicle-price">R$ {{ veiculo.valor }}</p>
             <i 
-              :class="veiculo.favorito ? 'bi bi-star-fill favorite-icon' : 'bi bi-star favorite-icon'"
-              @click="toggleFavorito"
+              :class="veiculo.favorito ? 'bi bi-star-fill' : 'bi bi-star'" 
+              class="favorite-icon" 
+              @click="toggleFavorito(veiculo)"
             ></i>
           </div>
           <p class="subtitle">{{ veiculo.descricao }}</p>
@@ -46,7 +47,7 @@
 <script>
 import Navbar from '../components/NavBar.vue';
 import DAOService from '@/Services/DAOService';
-import FavoritosService from "@/Services/FavoritosService";
+import FavoritosService from '@/Services/FavoritosService';
 
 export default {
   name: 'TelaVeiculo',
@@ -86,11 +87,18 @@ export default {
         alert('Erro ao carregar veículo.');
       }
     },
-    async toggleFavorito() {
-      this.veiculo.favorito = !this.veiculo.favorito;
+    
+    async toggleFavorito(veiculo) {
+      veiculo.favorito = !veiculo.favorito;
+      if (veiculo.favorito) {
+        FavoritosService.adicionarFavorito(veiculo);
+      } else {
+        FavoritosService.removerFavorito(veiculo.id);
+      }
+
+      // Atualiza no banco de dados (Firebase)
       try {
-        await this.daoService.update(this.$route.params.id, { favorito: this.veiculo.favorito });
-        console.log("Favorito atualizado com sucesso.");
+        await this.daoService.update(veiculo.id, { favorito: veiculo.favorito });
       } catch (error) {
         console.error("Erro ao atualizar favorito:", error);
         alert("Erro ao atualizar o favorito.");
@@ -143,6 +151,18 @@ export default {
   font-weight: bold;
   color: #5b3199;
 }
+.favorite-icon {
+  cursor: pointer;
+  font-size: 30px;
+  color: #ddd;
+  transition: transform 0.3s ease;
+}
+.favorite-icon.bi-star-fill {
+  color: #5b3199;
+}
+.favorite-icon:hover {
+  transform: scale(1.2);
+}
 .subtitle {
   font-size: 18px;
   color: #333;
@@ -173,13 +193,5 @@ export default {
   font-size: 24px;
   color: #5b3199;
   margin-top: 50px;
-}
-.favorite-icon {
-  font-size: 30px;
-  color: #ccc;
-  cursor: pointer;
-}
-.favorite-icon.bi-star-fill {
-  color: #5b3199;
 }
 </style>

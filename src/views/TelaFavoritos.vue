@@ -28,7 +28,7 @@
               <span>{{ carro.anoModelo }}/{{ carro.anoFabricacao }}</span>
             </div>
             <div class="card-actions">
-              <button class="btn-ver">Ver anúncio</button>
+              <button class="btn-ver"><router-link :to="`/veiculo/${carro.id}`" class="btn-ver">Ver anúncio</router-link></button>
             </div>
           </div>
         </div>
@@ -39,6 +39,7 @@
 
 <script>
 import Navbar from "../components/NavBar.vue";
+import DAOService from "@/Services/DAOService";
 import FavoritosService from "@/Services/FavoritosService";
 
 export default {
@@ -48,21 +49,50 @@ export default {
   },
   data() {
     return {
-      carros: FavoritosService.getFavoritos(),
+      carros: [],  // Inicializado vazio para carregar dinamicamente
+      daoService: new DAOService("anuncios"),  // Inicializa corretamente o serviço DAOService
     };
   },
+  created() {
+    this.carregarFavoritos();  // Chamar a função ao carregar a página
+  },
   methods: {
-    toggleFavorito(carro) {
+    async carregarFavoritos() {
+      try {
+        this.carros = FavoritosService.getFavoritos();
+      } catch (error) {
+        console.error("Erro ao carregar favoritos:", error);
+      }
+    },
+
+    async toggleFavorito(carro) {
       carro.favorito = !carro.favorito;
       if (carro.favorito) {
         FavoritosService.adicionarFavorito(carro);
       } else {
         FavoritosService.removerFavorito(carro.id);
       }
+
+      // Atualiza no banco de dados (Firebase)
+      try {
+        await this.daoService.update(carro.id, { favorito: carro.favorito });
+        console.log(`Favorito atualizado com sucesso para ID: ${carro.id}`);
+      } catch (error) {
+        console.error("Erro ao atualizar favorito:", error);
+        alert("Erro ao atualizar o favorito.");
+        carro.favorito = !carro.favorito;  // Reverte a alteração no frontend
+      }
+
+      // Recarregar lista após remoção para refletir mudanças na interface
+      this.carregarFavoritos();
     },
+    verAnuncio(id) {
+      this.$router.push(`/veiculo/${id}`);
+    }
   },
 };
 </script>
+
 
 <style scoped>
 
@@ -165,8 +195,8 @@ h2.titulo-roxo {
 .btn-ver {
   background-color: #5b3199;
   color: white;
+  text-decoration: none;
 }
-
 
 /* Estilo existente + estilos de favorite-icon */
 .favorite-icon {
