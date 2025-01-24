@@ -1,8 +1,7 @@
 <template>
   <div class="container">
     <!-- Seção da imagem -->
-    <div class="image-section">
-    </div>
+    <div class="image-section"></div>
 
     <!-- Seção do formulário -->
     <div class="form-section">
@@ -11,7 +10,7 @@
       <p class="instructions">
         Informe seu email cadastrado para receber instruções de redefinição de senha
       </p>
-      <form @submit.prevent="handleSubmit">
+      <form @submit.prevent="recuperarSenha">
         <div class="form-group">
           <label for="email">Email</label>
           <input 
@@ -19,9 +18,12 @@
             id="email" 
             v-model="email" 
             placeholder="user@exemplo.com" 
+            required
           />
         </div>
-        <button type="submit" class="submit-button">Enviar</button>
+        <button type="submit" class="submit-button" :disabled="loading">
+          {{ loading ? "Enviando..." : "Enviar" }}
+        </button>
       </form>
       <div class="form-footer">
         <p>Retornar para <router-link to="/">Login</router-link></p>
@@ -31,20 +33,33 @@
 </template>
 
 <script>
+import { getAuth, sendPasswordResetEmail } from "firebase/auth";
+
 export default {
   name: "EsqueceuSenha",
   data() {
     return {
       email: "",
+      loading: false,
     };
   },
   methods: {
-    handleSubmit() {
+    async recuperarSenha() {
       if (!this.email) {
         alert("Por favor, insira seu email!");
-      } else {
+        return;
+      }
+      this.loading = true;
+      const auth = getAuth();
+      try {
+        await sendPasswordResetEmail(auth, this.email);
         alert(`Instruções enviadas para o email: ${this.email}`);
-        // Aqui você pode implementar a lógica para enviar o email ao backend
+        this.email = "";
+        this.$router.push("/login");
+      } catch (error) {
+        alert("Erro ao enviar email de recuperação: " + error.message);
+      } finally {
+        this.loading = false;
       }
     },
   },
@@ -62,23 +77,23 @@ body {
   justify-content: center;
   align-items: center;
   background-color: #F3F3F3;
-  overflow: hidden; /* Remove barras de rolagem */
+  overflow: hidden;
 }
 
 /* Container principal */
 .container {
   display: flex;
-  width: 100vw; /* Ocupa toda a largura da tela */
-  height: 100vh; /* Ocupa toda a altura da tela */
+  width: 100vw;
+  height: 100vh;
   background-color: #FFF;
 }
 
 /* Estilo da imagem e fundo do carro */
 .image-section {
-  background-image: url('/public/logos/imagem_login.png'); /* Ajuste o caminho da imagem */
+  background-image: url('/public/logos/imagem_login.png');
   background-size: cover;
   background-position: center;
-  width: 50%; /* Ocupa metade da largura */
+  width: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -86,50 +101,29 @@ body {
   text-align: center;
 }
 
-/* Texto sobreposto na imagem */
-.image-section h1 {
-  font-size: 32px;
-  margin: 0;
-}
-
-.image-section p {
-  font-size: 16px;
-}
-
 /* Seção do formulário */
 .form-section {
   padding: 40px;
-  width: 50%; /* Ocupa metade da largura */
+  width: 50%;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
-/* Estilo da logo */
 .logo {
-  width: 250px; /* Ajuste o tamanho da largura da logo */
-  height: auto; /* Mantém a proporção */
-  margin: 0 auto 10px; /* Reduz a margem inferior para mover o título para cima */
+  width: 250px;
+  height: auto;
+  margin: 0 auto 10px;
   display: block;
 }
 
-/* Título do formulário */
 .form-title {
   color: #531B76;
-  margin: 5px 0 20px; /* Ajusta a margem superior para mover o título mais para cima */
+  margin: 5px 0 20px;
   font-size: 28px;
   text-align: center;
 }
 
-/* Subtítulo e instruções */
-.form-section h3 {
-  margin: 10px 0 20px;
-  font-size: 18px;
-  color: #333;
-  text-align: center;
-}
-
-/* Instruções */
 .instructions {
   text-align: center;
   color: #666;
@@ -137,7 +131,6 @@ body {
   margin-bottom: 20px;
 }
 
-/* Campos de entrada */
 .form-group {
   margin-bottom: 15px;
   display: flex;
@@ -157,7 +150,6 @@ body {
   font-size: 16px;
 }
 
-/* Botão de envio */
 .submit-button {
   width: 100%;
   padding: 15px;
@@ -170,11 +162,11 @@ body {
   margin-bottom: 10px;
 }
 
-.submit-button:hover {
-  background-color: #4a287d;
+.submit-button:disabled {
+  background-color: #888;
+  cursor: not-allowed;
 }
 
-/* Link de retorno */
 .form-footer {
   text-align: center;
   font-size: 14px;

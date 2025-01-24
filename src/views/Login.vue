@@ -1,8 +1,7 @@
 <template>
   <div class="container">
     <!-- Área da imagem e logo -->
-    <div class="image-section">
-    </div>
+    <div class="image-section"></div>
 
     <!-- Área de login -->
     <div class="login-section">
@@ -11,7 +10,7 @@
         <span class="highlight">VitrineCar</span>
       </h2>
 
-      <form @submit.prevent="submitLogin">
+      <form @submit.prevent="login">
         <label for="email">Email</label>
         <input 
           type="email" 
@@ -33,8 +32,8 @@
         <button type="submit">Entrar</button>
 
         <div>
-          <a href="#">Esqueceu a senha?</a>
-          <a href="#">Cadastre-se</a>
+          <router-link to="/esqueceu-senha">Esqueceu a senha?</router-link>
+          <router-link to="/cadastro">Cadastre-se</router-link>
         </div>
       </form>
     </div>
@@ -42,6 +41,8 @@
 </template>
 
 <script>
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+
 export default {
   name: "Login",
   data() {
@@ -51,10 +52,16 @@ export default {
     };
   },
   methods: {
-    submitLogin() {
-      // Lógica de autenticação
-      console.log("Email:", this.email);
-      console.log("Senha:", this.password);
+    async login() {
+      try {
+        const auth = getAuth();
+        await signInWithEmailAndPassword(auth, this.email, this.password);
+        alert("Login realizado com sucesso!");
+        this.$router.push('/');
+      } catch (error) {
+        alert("Erro ao fazer login: " + error.message);
+        console.error("Erro de login:", error);
+      }
     },
   },
 };
@@ -88,8 +95,8 @@ body {
 
 /* Área de imagem e logo */
 .image-section {
-  background: url('/public/logos/imagem_login.png') no-repeat center center;
-  background-size: cover; /* Ajusta a imagem para cobrir toda a área */
+  background: url('/logos/imagem_login.png') no-repeat center center;
+  background-size: cover;
   width: 70%;
   display: flex;
   flex-direction: column;
@@ -116,15 +123,14 @@ body {
   font-size: 32px;
   color: #531B76;
   text-align: center;
-  margin-bottom: 30px; /* Espaçamento abaixo do título */
-  line-height: 1.5; /* Espaçamento entre as linhas */
+  margin-bottom: 30px;
+  line-height: 1.5;
 }
 
 .welcome-text .highlight {
   color: #5B3199;
 }
 
-/* Outros estilos permanecem inalterados */
 .login-section label {
   font-size: 14px;
   color: #333;
@@ -132,8 +138,7 @@ body {
   display: block;
 }
 
-.login-section input[type="email"],
-.login-section input[type="password"] {
+.login-section input {
   width: 100%;
   padding: 12px;
   font-size: 16px;
