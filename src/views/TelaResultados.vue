@@ -68,18 +68,16 @@ export default {
     async carregarResultados() {
       try {
         const termoNormalizado = this.termo.trim().toLowerCase();
-        const resultadosModelo = await this.daoService.searchByField(
-          "modelo",
-          termoNormalizado
-        );
-        const resultadosMarca = await this.daoService.searchByField(
-          "marca",
-          termoNormalizado
-        );
-        const todosResultados = [...resultadosModelo, ...resultadosMarca];
+
+        // Busca por modelo, marca e categoria
+        const resultadosModelo = await this.daoService.searchByField("modelo", termoNormalizado);
+        const resultadosMarca = await this.daoService.searchByField("marca", termoNormalizado);
+        const resultadosCategoria = await this.daoService.searchByField("categoria", termoNormalizado);
+
+        // Combinar os resultados e remover duplicatas
+        const todosResultados = [...resultadosModelo, ...resultadosMarca, ...resultadosCategoria];
         this.anuncios = todosResultados.filter(
-          (item, index, self) =>
-            self.findIndex((v) => v.id === item.id) === index
+          (item, index, self) => self.findIndex((v) => v.id === item.id) === index
         );
       } catch (error) {
         console.error("Erro ao buscar veículos:", error);

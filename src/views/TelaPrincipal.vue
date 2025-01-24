@@ -1,6 +1,5 @@
 <template>
   <div>
-    <!-- Navbar -->
     <Navbar />
 
     <!-- Área de Busca -->
@@ -13,7 +12,7 @@
           class="form-control" 
           placeholder="Digite marca ou modelo do veículo"
         />
-        <button @click="buscarOfertas" class="btn btn-primary">Ver Ofertas</button>
+        <button @click="buscarOfertas(busca)" class="btn btn-primary">Ver Ofertas</button>
       </div>
     </div>
 
@@ -28,6 +27,7 @@
             :src="marca.img" 
             :alt="marca.nome" 
             class="img-fluid"
+            @click="buscarOfertas(marca.nome)"
           />
         </div>
       </div>
@@ -36,7 +36,12 @@
         <h3>Categorias</h3>
         <div class="category-logos">
           <div v-for="(categoria, index) in categorias" :key="index" class="category-item">
-            <img :src="categoria.img" :alt="categoria.nome" class="img-fluid" />
+            <img 
+              :src="categoria.img" 
+              :alt="categoria.nome" 
+              class="img-fluid"
+              @click="filtrarCategoria(categoria.nome)"
+            />
             <p class="category-name">{{ categoria.nome }}</p>
           </div>
         </div>
@@ -65,28 +70,26 @@ export default {
       ],
       categorias: [
         { nome: "SUV", img: "/carro/sw4.png" },
-        { nome: "Picapes", img: "/carro/Ram-3500 1.png" },
+        { nome: "Picape", img: "/carro/Ram-3500 1.png" },
         { nome: "Sedan", img: "/carro/corolla.png" },
-        { nome: "Hatches", img: "/carro/golf.png" },
+        { nome: "Hatch", img: "/carro/golf.png" },
       ],
     };
   },
   methods: {
-    buscarOfertas() {
-      if (this.busca.trim()) {
-
-        const termoNormalizado = this.busca.trim().toLowerCase(); 
-
-        // Redireciona para a tela de resultados com o termo de busca
-        this.$router.push({ name: "TelaResultados", query: { termo: this.busca } });
+    buscarOfertas(termo) {
+      if (termo.trim()) {
+        this.$router.push({ name: "TelaResultados", query: { termo: termo.trim().toLowerCase() } });
       } else {
         alert("Por favor, digite o nome ou modelo do veículo!");
       }
     },
+    filtrarCategoria(categoria) {
+      this.$router.push({ name: "TelaResultados", query: { termo: categoria }});
+    },
   },
 };
 </script>
-
 
 <style scoped>
 /* Estilos gerais */
@@ -177,6 +180,7 @@ body {
   border-radius: 10px;
   margin: 10px;
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
 }
 
 .category-item {
