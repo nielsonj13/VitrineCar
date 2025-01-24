@@ -3,7 +3,14 @@
     <Navbar />
     <div class="container" v-if="veiculo">
       <div class="image-gallery">
-        <img v-for="(image, index) in veiculo.imagens" :key="index" :src="image" alt="Carro" class="img-fluid" />
+        <img 
+          v-for="(imagem, index) in veiculo.imagens" 
+          :key="index" 
+          :src="imagem" 
+          alt="Imagem do veículo" 
+          class="img-fluid" 
+          @error="imagemErro(index)"
+        />
       </div>
 
       <div class="vehicle-info">
@@ -65,6 +72,9 @@ export default {
     await this.carregarVeiculo();
   },
   methods: {
+    imagemErro(index) {
+      this.veiculo.imagens[index] = "https://via.placeholder.com/300?text=Imagem+Não+Disponível";
+    },
     async carregarVeiculo() {
       try {
         const id = this.$route.params.id;

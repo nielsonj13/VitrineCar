@@ -98,10 +98,18 @@
     <div v-else-if="etapa === 3" class="content">
       <h3>Adicionar fotos do veículo</h3>
       <div class="upload-box">
-        <label for="upload" class="upload-label">
-          <span>Upload de imagens</span>
-          <input type="file" id="upload" class="upload-input" @change="uploadImagens" multiple />
-        </label>
+        <div class="form-group">
+          <label>Link da Imagem 1</label>
+          <input type="text" v-model="anuncio.imagens[0]" placeholder="Insira o link da imagem" />
+        </div>
+        <div class="form-group">
+          <label>Link da Imagem 2</label>
+          <input type="text" v-model="anuncio.imagens[1]" placeholder="Insira o link da imagem" />
+        </div>
+        <div class="form-group">
+          <label>Link da Imagem 3</label>
+          <input type="text" v-model="anuncio.imagens[2]" placeholder="Insira o link da imagem" />
+        </div>
       </div>
       <div class="actions">
         <button class="btn-back" @click="voltarEtapa">Voltar</button>
@@ -134,7 +142,7 @@ export default {
         valor: "",
         cor: "",
         opcionais: [],
-        imagens: [],
+        imagens: ["", "", ""],
       },
       opcionais: [
         "Air Bag",
