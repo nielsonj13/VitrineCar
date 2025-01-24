@@ -92,7 +92,7 @@ export default {
         });
 
         alert("Cadastro realizado com sucesso!");
-        this.$router.push("/login");
+        this.$router.push("/");
       } catch (error) {
         alert("Erro ao cadastrar: " + error.message);
         console.error(error);

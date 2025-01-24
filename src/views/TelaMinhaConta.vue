@@ -66,13 +66,14 @@
 
       <!-- Botão para Salvar Alterações -->
       <button class="save-button" @click="salvarAlteracoes">Salvar Alterações</button>
+      <button class="delete-button" @click="excluirConta">Excluir Conta</button>
     </div>
   </div>
 </template>
 
 <script>
 import Navbar from "../components/NavBar.vue";
-import { getAuth, updateProfile} from "firebase/auth";
+import { getAuth, updateProfile, deleteUser} from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../firebase";
 
@@ -172,6 +173,24 @@ export default {
         alert("Erro ao salvar os dados.");
       }
     },
+    async excluirConta() {
+      if (confirm("Tem certeza de que deseja excluir sua conta? Esta ação não pode ser desfeita.")) {
+        try {
+          const auth = getAuth();
+          const user = auth.currentUser;
+          if (user) {
+            await deleteUser(user);
+            alert("Conta excluída com sucesso.");
+            this.$router.push("/login");
+          } else {
+            alert("Nenhum usuário autenticado.");
+          }
+        } catch (error) {
+          console.error("Erro ao excluir conta:", error);
+          alert("Erro ao excluir conta. Faça login novamente para confirmar a ação.");
+        }
+      }
+    }
   },
 };
 </script>
@@ -248,5 +267,21 @@ h3 {
 
 .save-button:hover {
   background-color: #4a287d;
+}
+
+.delete-button {
+  display: block;
+  margin: 20px auto;
+  padding: 10px 20px;
+  background-color: #dc3545;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.delete-button:hover {
+  background-color: #c82333;
 }
 </style>

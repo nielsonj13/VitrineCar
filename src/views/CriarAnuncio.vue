@@ -122,6 +122,7 @@
 <script>
 import Navbar from "../components/NavBar.vue";
 import DAOService from "@/Services/DAOService";
+import { getAuth } from "firebase/auth";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { storage } from "../firebase"; 
 
@@ -143,6 +144,7 @@ export default {
         cor: "",
         opcionais: [],
         imagens: ["", "", ""],
+        userId: null,
       },
       opcionais: [
         "Air Bag",
@@ -162,6 +164,13 @@ export default {
   created() {
     // Inicializa a instância do DAOService
     this.daoService = new DAOService("anuncios");
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (!user) {
+      this.$router.push("/login");  // Redireciona se não estiver logado
+    } else {
+      this.anuncio.userId = user.uid;  // Vincula o anúncio ao usuário logado
+    }
   },
   methods: {
   validateNumberInput(field) {
@@ -223,6 +232,10 @@ export default {
     try {
       if (!this.anuncio.marca || !this.anuncio.modelo || !this.anuncio.valor) {
         alert("Por favor, preencha todos os campos obrigatórios.");
+        return;
+      }
+      if (!this.anuncio.userId) {
+        alert("Você precisa estar logado para criar um anúncio.");
         return;
       }
 

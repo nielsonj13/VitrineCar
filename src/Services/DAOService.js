@@ -16,10 +16,23 @@ class DAOService {
     if (!collectionPath) {
       throw new Error("Collection path must be provided");
     }
-    this.collectionRef = collection(db, collectionPath); // Ref para a coleção no Firestore
+    this.collectionRef = collection(db, collectionPath);
+    this.collectionName = collectionPath;
   }
 
-  // Método para inserir um novo objeto
+  // Método para obter anúncios de um usuário específico
+  async getAnunciosPorUsuario(userId) {
+    try {
+      const q = query(this.collectionRef, where("userId", "==", userId));
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+      console.error("Erro ao buscar anúncios do usuário: ", error);
+      throw new Error("Erro ao buscar anúncios do usuário");
+    }
+  }
+
+  // Método para inserir um novo objeto com associação ao usuário logado
   async insert(object) {
     try {
       const docRef = await addDoc(this.collectionRef, object);
@@ -33,7 +46,7 @@ class DAOService {
   // Método para atualizar um documento existente
   async update(id, object) {
     try {
-      const docRef = doc(db, this.collectionRef.path, id);
+      const docRef = doc(db, this.collectionName, id);
       await updateDoc(docRef, object);
     } catch (error) {
       console.error("Erro ao atualizar documento: ", error);
@@ -44,7 +57,7 @@ class DAOService {
   // Método para excluir um documento
   async delete(id) {
     try {
-      const docRef = doc(db, this.collectionRef.path, id);
+      const docRef = doc(db, this.collectionName, id);
       await deleteDoc(docRef);
     } catch (error) {
       console.error("Erro ao excluir documento: ", error);
@@ -56,11 +69,7 @@ class DAOService {
   async getAll() {
     try {
       const querySnapshot = await getDocs(this.collectionRef);
-      const documents = [];
-      querySnapshot.forEach((doc) => {
-        documents.push({ id: doc.id, ...doc.data() });
-      });
-      return documents;
+      return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     } catch (error) {
       console.error("Erro ao buscar documentos: ", error);
       throw new Error("Erro ao buscar documentos");
@@ -70,7 +79,7 @@ class DAOService {
   // Método para buscar um documento específico pelo ID
   async get(id) {
     try {
-      const docRef = doc(db, this.collectionRef.path, id);
+      const docRef = doc(db, this.collectionName, id);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
         return { id: docSnap.id, ...docSnap.data() };
@@ -83,31 +92,22 @@ class DAOService {
     }
   }
 
-  // Método para buscar documentos com base em um filtro
+  // Método para buscar documentos com base em um campo específico
   async searchByField(field, value) {
     try {
-      const querySnapshot = await getDocs(this.collectionRef);
-      const normalizedValue = value.toLowerCase(); // Normaliza o termo para minúsculas
-      const documents = [];
-
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        if (data[field] && data[field].toLowerCase() === normalizedValue) {
-          documents.push({ id: doc.id, ...data });
-        }
-      });
-
-      return documents;
+      const q = query(this.collectionRef, where(field, "==", value.toLowerCase()));
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     } catch (error) {
       console.error("Erro ao buscar documentos:", error);
       throw new Error("Erro ao buscar documentos");
     }
   }
 
-  // Método para buscar documentos baseados em um termo que pode estar em múltiplos campos
+  // Método para buscar documentos com base em múltiplos campos (marca e modelo)
   async searchByTerm(term) {
     try {
-      const lowerTerm = term.toLowerCase(); // Normaliza o termo para minúsculas
+      const lowerTerm = term.toLowerCase();
 
       // Consulta por campo "modelo"
       const modeloQuery = query(this.collectionRef, where("modelo", "==", lowerTerm));
@@ -134,4 +134,3 @@ class DAOService {
 }
 
 export default DAOService;
-  

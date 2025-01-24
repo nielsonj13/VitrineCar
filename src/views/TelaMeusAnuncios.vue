@@ -51,6 +51,7 @@
 
 <script>
 import Navbar from "../components/NavBar.vue";
+import { getAuth } from "firebase/auth";
 import DAOService from "@/Services/DAOService";
 import FavoritosService from "@/Services/FavoritosService"; // Importando o serviço de favoritos
 
@@ -63,34 +64,37 @@ export default {
     return {
       anuncios: [],
       daoService: null,
+      userId: null,
     };
   },
   created() {
     this.daoService = new DAOService("anuncios");
     this.carregarAnuncios();
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (!user) {
+      this.$router.push("/login");
+    } else {
+      this.userId = user.uid;
+      this.carregarAnuncios();
+    }
   },
   methods: {
     async carregarAnuncios() {
       try {
-        this.anuncios = await this.daoService.getAll();
-        // Atribuindo a imagem conforme o modelo
-        this.anuncios.forEach(anuncio => {
-          if (anuncio.modelo === 'Fiat Pulse') {
-            anuncio.imagem = "https://img.olx.com.br/images/57/577487211134112.jpg";
-          } else if (anuncio.modelo === 'Ford Fiesta') {
-            anuncio.imagem = "https://img.olx.com.br/images/57/577487211134113.jpg";
-          } else if (anuncio.modelo === 'Chevrolet Onix') {
-            anuncio.imagem = "https://img.olx.com.br/images/57/577487211134114.jpg";
-          }
-          // Adicione mais condições conforme necessário
-        });
-      } catch (error) {
+        const anunciosTodos = await this.daoService.getAll();
+        this.anuncios = anunciosTodos.filter((anuncio) => anuncio.userId === this.userId);
+      }catch (error) {
         console.error("Erro ao carregar anúncios:", error);
         alert("Erro ao carregar os anúncios.");
       }
     },
 
     toggleFavorito(anuncio) {
+      if (!FavoritosService.verificarUsuarioLogado()) {
+        return;
+      }
       anuncio.favorito = !anuncio.favorito;
       if (anuncio.favorito) {
         FavoritosService.adicionarFavorito(anuncio); // Adiciona aos favoritos

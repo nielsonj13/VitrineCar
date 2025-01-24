@@ -66,6 +66,9 @@
         }
       },      
       toggleFavorito(anuncio) {
+        if (!FavoritosService.verificarUsuarioLogado()) {
+        return;
+      }
         anuncio.favorito = !anuncio.favorito;
         if (anuncio.favorito) {
           FavoritosService.adicionarFavorito(anuncio); // Adiciona aos favoritos

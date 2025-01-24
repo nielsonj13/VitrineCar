@@ -79,6 +79,9 @@ export default {
       }
     },
     async toggleFavorito(veiculo) {
+      if (!FavoritosService.verificarUsuarioLogado()) {
+        return;
+      }
       veiculo.favorito = !veiculo.favorito;
       if (veiculo.favorito) {
         FavoritosService.adicionarFavorito(veiculo);
