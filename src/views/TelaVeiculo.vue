@@ -99,25 +99,31 @@ export default {
       }
     },
     
-    async toggleFavorito(veiculo) {
-      if (!FavoritosService.verificarUsuarioLogado()) {
-        return;
-      }
-      veiculo.favorito = !veiculo.favorito;
-      if (veiculo.favorito) {
-        FavoritosService.adicionarFavorito(veiculo);
-      } else {
-        FavoritosService.removerFavorito(veiculo.id);
-      }
+    async toggleFavorito(anuncio) {
+        if (!FavoritosService.getUsuarioLogado()) {
+          alert("Você precisa estar logado para favoritar um anúncio.");
+          return;
+        }
 
-      // Atualiza no banco de dados (Firebase)
-      try {
-        await this.daoService.update(veiculo.id, { favorito: veiculo.favorito });
-      } catch (error) {
-        console.error("Erro ao atualizar favorito:", error);
-        alert("Erro ao atualizar o favorito.");
-      }
-    }
+        try {
+          const isFavorito = await FavoritosService.isFavorito(anuncio.id);
+          
+          if (isFavorito) {
+            await FavoritosService.removerFavorito(anuncio.id);
+            anuncio.favorito = false;
+          } else {
+            await FavoritosService.adicionarFavorito(anuncio);
+            anuncio.favorito = true;
+          }
+
+          // Atualiza a propriedade de favorito no Firestore
+          await this.daoService.update(anuncio.id, { favorito: anuncio.favorito });
+
+        } catch (error) {
+          console.error("Erro ao atualizar favorito:", error);
+          alert("Erro ao atualizar o favorito.");
+        }
+      },
   },
 };
 </script>

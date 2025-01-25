@@ -5,13 +5,13 @@
       <div class="content">
         <h2 class="titulo-roxo text-center mb-4">Favoritos</h2>
 
-        <div class="anuncios-container">
+        <div v-if="carros.length > 0" class="anuncios-container">
           <div v-for="carro in carros" :key="carro.id" class="card">
             <img 
-            :src="carro.imagens && carro.imagens.length > 0 ? carro.imagens[0] : 'https://via.placeholder.com/300?text=Sem+Imagem'" 
-            alt="Imagem do veículo" 
-            class="img-fluid"
-          />
+              :src="carro.imagens && carro.imagens.length > 0 ? carro.imagens[0] : 'https://via.placeholder.com/300?text=Sem+Imagem'" 
+              alt="Imagem do veículo" 
+              class="img-fluid"
+            />
             <div class="car-info">
               <div class="title-container">
                 <h3>{{ carro.marca }} {{ carro.modelo }}</h3>
@@ -25,10 +25,15 @@
               <span>{{ carro.anoModelo }}/{{ carro.anoFabricacao }}</span>
             </div>
             <div class="card-actions">
-              <button class="btn-ver"><router-link :to="`/veiculo/${carro.id}`" class="btn-ver">Ver anúncio</router-link></button>
+              <button class="btn-ver" @click="verAnuncio(carro.id)">Ver anúncio</button>
             </div>
           </div>
         </div>
+        
+        <div v-else class="no-favorites">
+          <p>Você não tem veículos favoritados.</p>
+        </div>
+
       </div>
     </div>
   </div>
@@ -36,8 +41,8 @@
 
 <script>
 import Navbar from "../components/NavBar.vue";
-import DAOService from "@/Services/DAOService";
 import FavoritosService from "@/Services/FavoritosService";
+import DAOService from "@/Services/DAOService";
 
 export default {
   name: "Favoritos",
@@ -46,43 +51,57 @@ export default {
   },
   data() {
     return {
-      carros: [],  // Inicializado vazio para carregar dinamicamente
-      daoService: new DAOService("anuncios"),  // Inicializa corretamente o serviço DAOService
+      carros: [],  
+      daoService: new DAOService("anuncios"),
     };
   },
-  created() {
-    this.carregarFavoritos();  // Chamar a função ao carregar a página
+  async created() {
+    await this.carregarFavoritos();
   },
   methods: {
     async carregarFavoritos() {
       try {
-        this.carros = FavoritosService.getFavoritos();
+        const favoritos = await FavoritosService.getFavoritos();
+        this.carros = favoritos.map(carro => ({
+          ...carro,
+          favorito: true, // Mantém a estrela acesa para todos os veículos favoritos
+        }));
       } catch (error) {
         console.error("Erro ao carregar favoritos:", error);
       }
     },
 
-    async toggleFavorito(carro) {
-      carro.favorito = !carro.favorito;
-      if (carro.favorito) {
-        FavoritosService.adicionarFavorito(carro);
-      } else {
-        FavoritosService.removerFavorito(carro.id);
+    async toggleFavorito(anuncio) {
+      if (!FavoritosService.getUsuarioLogado()) {
+        alert("Você precisa estar logado para favoritar um anúncio.");
+        return;
       }
 
-      // Atualiza no banco de dados (Firebase)
       try {
-        await this.daoService.update(carro.id, { favorito: carro.favorito });
-        console.log(`Favorito atualizado com sucesso para ID: ${carro.id}`);
+        const isFavorito = await FavoritosService.isFavorito(anuncio.id);
+        
+        if (isFavorito) {
+          await FavoritosService.removerFavorito(anuncio.id);
+          anuncio.favorito = false;
+        } else {
+          await FavoritosService.adicionarFavorito(anuncio);
+          anuncio.favorito = true;
+        }
+
+        // Atualiza a propriedade de favorito no Firestore
+        await this.daoService.update(anuncio.id, { favorito: anuncio.favorito });
+
+        // Atualiza a lista de carros após a alteração
+        this.carros = this.carros.map(carro =>
+          carro.id === anuncio.id ? { ...carro, favorito: anuncio.favorito } : carro
+        );
+
       } catch (error) {
         console.error("Erro ao atualizar favorito:", error);
         alert("Erro ao atualizar o favorito.");
-        carro.favorito = !carro.favorito;  // Reverte a alteração no frontend
       }
-
-      // Recarregar lista após remoção para refletir mudanças na interface
-      this.carregarFavoritos();
     },
+
     verAnuncio(id) {
       this.$router.push(`/veiculo/${id}`);
     }
@@ -90,9 +109,7 @@ export default {
 };
 </script>
 
-
 <style scoped>
-
 .container {
   max-width: 80%;
   margin: 0 auto;
@@ -195,17 +212,13 @@ h2.titulo-roxo {
   text-decoration: none;
 }
 
-/* Estilo existente + estilos de favorite-icon */
-.favorite-icon {
-  cursor: pointer;
-  font-size: 30px;
-  color: #ddd;
-  transition: transform 0.3s ease;
-}
-.favorite-icon.bi-star-fill {
-  color: #5b3199;
-}
-.favorite-icon:hover {
-  transform: scale(1.2);
+/* Estilização caso não tenha favoritos */
+.no-favorites {
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: 10px;
+  background-color: #f3f3f3;
+  color: #333;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 </style>
