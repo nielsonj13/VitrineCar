@@ -92,7 +92,7 @@ export default {
         await this.daoService.update(anuncio.id, { favorito: anuncio.favorito });
 
         // Recarrega os favoritos após atualização
-        await this.carregarFavoritos();
+        // await this.carregarFavoritos();
 
       } catch (error) {
         console.error("Erro ao atualizar favorito:", error);

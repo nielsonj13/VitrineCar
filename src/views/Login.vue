@@ -56,7 +56,6 @@ export default {
       try {
         const auth = getAuth();
         await signInWithEmailAndPassword(auth, this.email, this.password);
-        alert("Login realizado com sucesso!");
         this.$router.push('/');
       } catch (error) {
         alert("Erro ao fazer login: " + error.message);
