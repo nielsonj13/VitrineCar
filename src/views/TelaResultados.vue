@@ -7,9 +7,12 @@
         <p v-if="termo">Exibindo resultados para: <strong>{{ termo }}</strong></p>
 
         <div class="anuncios-container">
-
           <div v-for="anuncio in anuncios" :key="anuncio.id" class="card">
-            <img :src="anuncio.imagens[0]" alt="Imagem do veículo" class="img-fluid" />
+            <img 
+              :src="anuncio.imagens && anuncio.imagens.length > 0 ? anuncio.imagens[0] : 'https://via.placeholder.com/300?text=Sem+Imagem'"
+              alt="Imagem do veículo" 
+              class="img-fluid" 
+            />
             <div class="car-info">
               <div class="title-container">
                 <h3>{{ anuncio.marca }} {{ anuncio.modelo }}</h3>
@@ -53,10 +56,10 @@ export default {
       daoService: null,
     };
   },
-  created() {
+  async created() {
     this.termo = this.$route.query.termo || "";
     this.daoService = new DAOService("anuncios");
-    this.carregarResultados();
+    await this.carregarResultados();
   },
   methods: {
     async carregarResultados() {
@@ -70,39 +73,42 @@ export default {
 
         // Combinar os resultados e remover duplicatas
         const todosResultados = [...resultadosModelo, ...resultadosMarca, ...resultadosCategoria];
-        this.anuncios = todosResultados.filter(
-          (item, index, self) => self.findIndex((v) => v.id === item.id) === index
-        );
+
+        // Verificar quais anúncios são favoritos para o usuário logado
+        const favoritos = await FavoritosService.getFavoritos();
+        this.anuncios = todosResultados.map((anuncio) => ({
+          ...anuncio,
+          favorito: favoritos.some((fav) => fav.id === anuncio.id),
+        }));
       } catch (error) {
         console.error("Erro ao buscar veículos:", error);
         alert("Erro ao buscar os veículos. Tente novamente.");
       }
     },
     async toggleFavorito(anuncio) {
-        if (!FavoritosService.getUsuarioLogado()) {
-          alert("Você precisa estar logado para favoritar um anúncio.");
-          return;
+      if (!FavoritosService.getUsuarioLogado()) {
+        alert("Você precisa estar logado para favoritar um anúncio.");
+        return;
+      }
+
+      try {
+        const isFavorito = await FavoritosService.isFavorito(anuncio.id);
+
+        if (isFavorito) {
+          await FavoritosService.removerFavorito(anuncio.id);
+          anuncio.favorito = false;
+        } else {
+          await FavoritosService.adicionarFavorito(anuncio);
+          anuncio.favorito = true;
         }
 
-        try {
-          const isFavorito = await FavoritosService.isFavorito(anuncio.id);
-          
-          if (isFavorito) {
-            await FavoritosService.removerFavorito(anuncio.id);
-            anuncio.favorito = false;
-          } else {
-            await FavoritosService.adicionarFavorito(anuncio);
-            anuncio.favorito = true;
-          }
-
-          // Atualiza a propriedade de favorito no Firestore
-          await this.daoService.update(anuncio.id, { favorito: anuncio.favorito });
-
-        } catch (error) {
-          console.error("Erro ao atualizar favorito:", error);
-          alert("Erro ao atualizar o favorito.");
-        }
-      },
+        // Atualiza a propriedade de favorito no Firestore
+        await this.daoService.update(anuncio.id, { favorito: anuncio.favorito });
+      } catch (error) {
+        console.error("Erro ao atualizar favorito:", error);
+        alert("Erro ao atualizar o favorito.");
+      }
+    },
   },
 };
 </script>
@@ -202,16 +208,16 @@ h2 {
 
 .favorite-icon {
   cursor: pointer;
-  font-size: 30px; /* Aumenta o tamanho da estrela */
-  color: #ddd; /* Cor padrão */
+  font-size: 30px;
+  color: #ddd;
   transition: transform 0.3s ease;
 }
 
 .favorite-icon.bi-star-fill {
-  color: #5b3199; /* Cor roxa ao favoritar */
+  color: #5b3199;
 }
 
 .favorite-icon:hover {
-  transform: scale(1.2); /* Aumenta levemente ao passar o mouse */
+  transform: scale(1.2);
 }
 </style>

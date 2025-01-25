@@ -9,7 +9,6 @@
       <div class="anuncios-container">
        
         <div v-for="anuncio in anuncios" :key="anuncio.id" class="card">
-          
           <img 
             :src="anuncio.imagens && anuncio.imagens.length > 0 ? anuncio.imagens[0] : 'https://via.placeholder.com/300?text=Sem+Imagem'" 
             alt="Imagem do veículo" 
@@ -39,7 +38,6 @@
           </div>
         </div>
 
-        
         <div class="new-card" @click="criarAnuncio">
           <div class="new-icon">+</div>
           <p>Criar Novo Anúncio</p>
@@ -51,9 +49,9 @@
 
 <script>
 import Navbar from "../components/NavBar.vue";
-import { getAuth } from "firebase/auth";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import DAOService from "@/Services/DAOService";
-import FavoritosService from "@/Services/FavoritosService"; // Importando o serviço de favoritos
+import FavoritosService from "@/Services/FavoritosService"; 
 
 export default {
   name: "MeusAnuncios",
@@ -63,59 +61,66 @@ export default {
   data() {
     return {
       anuncios: [],
-      daoService: null,
+      daoService: new DAOService("anuncios"),
       userId: null,
     };
   },
   created() {
-    this.daoService = new DAOService("anuncios");
-    this.carregarAnuncios();
-    const auth = getAuth();
-    const user = auth.currentUser;
-
-    if (!user) {
-      this.$router.push("/login");
-    } else {
-      this.userId = user.uid;
-      this.carregarAnuncios();
-    }
+    this.verificarUsuario();
   },
   methods: {
+    verificarUsuario() {
+      const auth = getAuth();
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          this.userId = user.uid;
+          this.carregarAnuncios();
+        } else {
+          this.$router.push("/login");
+        }
+      });
+    },
+
     async carregarAnuncios() {
       try {
         const anunciosTodos = await this.daoService.getAll();
-        this.anuncios = anunciosTodos.filter((anuncio) => anuncio.userId === this.userId);
-      }catch (error) {
+        this.anuncios = anunciosTodos
+          .filter((anuncio) => anuncio.userId === this.userId)
+          .map(async (anuncio) => {
+            const isFavorito = await FavoritosService.isFavorito(anuncio.id);
+            return { ...anuncio, favorito: isFavorito };
+          });
+        this.anuncios = await Promise.all(this.anuncios);
+      } catch (error) {
         console.error("Erro ao carregar anúncios:", error);
         alert("Erro ao carregar os anúncios.");
       }
     },
 
     async toggleFavorito(anuncio) {
-        if (!FavoritosService.getUsuarioLogado()) {
-          alert("Você precisa estar logado para favoritar um anúncio.");
-          return;
+      if (!FavoritosService.getUsuarioLogado()) {
+        alert("Você precisa estar logado para favoritar um anúncio.");
+        return;
+      }
+
+      try {
+        const isFavorito = await FavoritosService.isFavorito(anuncio.id);
+
+        if (isFavorito) {
+          await FavoritosService.removerFavorito(anuncio.id);
+          anuncio.favorito = false;
+        } else {
+          await FavoritosService.adicionarFavorito(anuncio);
+          anuncio.favorito = true;
         }
 
-        try {
-          const isFavorito = await FavoritosService.isFavorito(anuncio.id);
-          
-          if (isFavorito) {
-            await FavoritosService.removerFavorito(anuncio.id);
-            anuncio.favorito = false;
-          } else {
-            await FavoritosService.adicionarFavorito(anuncio);
-            anuncio.favorito = true;
-          }
+        await this.daoService.update(anuncio.id, { favorito: anuncio.favorito });
 
-          // Atualiza a propriedade de favorito no Firestore
-          await this.daoService.update(anuncio.id, { favorito: anuncio.favorito });
-
-        } catch (error) {
-          console.error("Erro ao atualizar favorito:", error);
-          alert("Erro ao atualizar o favorito.");
-        }
-      },
+      } catch (error) {
+        console.error("Erro ao atualizar favorito:", error);
+        alert("Erro ao atualizar o favorito.");
+      }
+    },
 
     criarAnuncio() {
       this.$router.push("/criar-anuncio");
@@ -140,7 +145,6 @@ export default {
 </script>
 
 <style scoped>
-/* Estilo Base */
 .container {
   max-width: 80%;
   margin: 0 auto;
@@ -198,17 +202,17 @@ h2 {
 
 .favorite-icon {
   cursor: pointer;
-  font-size: 30px; /* Aumenta o tamanho da estrela */
-  color: #ddd; /* Cor padrão */
+  font-size: 30px;
+  color: #ddd;
   transition: transform 0.3s ease;
 }
 
 .favorite-icon.bi-star-fill {
-  color: #5b3199; /* Cor roxa ao favoritar */
+  color: #5b3199;
 }
 
 .favorite-icon:hover {
-  transform: scale(1.2); /* Aumenta levemente ao passar o mouse */
+  transform: scale(1.2);
 }
 
 .car-info p {
@@ -243,7 +247,6 @@ h2 {
   text-decoration: none;
 }
 
-
 .btn-editar {
   background-color: #ffc107;
   color: white;
@@ -254,7 +257,6 @@ h2 {
   color: white;
 }
 
-/* Estilo do Card Novo Anúncio */
 .new-card {
   background-color: #f3f3f3;
   border-radius: 10px;

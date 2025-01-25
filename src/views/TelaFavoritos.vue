@@ -29,7 +29,7 @@
             </div>
           </div>
         </div>
-        
+
         <div v-else class="no-favorites">
           <p>Você não tem veículos favoritados.</p>
         </div>
@@ -64,7 +64,7 @@ export default {
         const favoritos = await FavoritosService.getFavoritos();
         this.carros = favoritos.map(carro => ({
           ...carro,
-          favorito: true, // Mantém a estrela acesa para todos os veículos favoritos
+          favorito: true, // Garante que a estrela estará acesa para veículos favoritos
         }));
       } catch (error) {
         console.error("Erro ao carregar favoritos:", error);
@@ -91,10 +91,8 @@ export default {
         // Atualiza a propriedade de favorito no Firestore
         await this.daoService.update(anuncio.id, { favorito: anuncio.favorito });
 
-        // Atualiza a lista de carros após a alteração
-        this.carros = this.carros.map(carro =>
-          carro.id === anuncio.id ? { ...carro, favorito: anuncio.favorito } : carro
-        );
+        // Recarrega os favoritos após atualização
+        await this.carregarFavoritos();
 
       } catch (error) {
         console.error("Erro ao atualizar favorito:", error);

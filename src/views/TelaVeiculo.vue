@@ -35,15 +35,6 @@
           </div>
           <p class="options"><strong>Opcionais:</strong> {{ veiculo.opcionais?.join(', ') }}</p>
         </div>
-
-        <!-- <div class="info-section">
-          <h3>Informações do Vendedor</h3>
-          <div class="seller-details">
-            <p class="seller-name"><i class="bi bi-person-circle"></i> {{ veiculo.vendedor.nome }}</p>
-            <p class="seller-contact"><i class="bi bi-telephone"></i> {{ veiculo.vendedor.contato }}</p>
-            <p class="seller-location"><i class="bi bi-geo-alt"></i> {{ veiculo.vendedor.localizacao }}</p>
-          </div>
-        </div> -->
       </div>
     </div>
     <div v-else>
@@ -78,18 +69,15 @@ export default {
     async carregarVeiculo() {
       try {
         const id = this.$route.params.id;
-        console.log("ID do veículo recebido:", id);
-
         if (!id) {
           alert("ID do veículo não fornecido.");
           return;
         }
 
         const veiculoData = await this.daoService.get(id);
-
         if (veiculoData) {
-          console.log("Dados do veículo carregados:", veiculoData);
-          this.veiculo = veiculoData;
+          const isFavorito = await FavoritosService.isFavorito(veiculoData.id);
+          this.veiculo = { ...veiculoData, favorito: isFavorito };
         } else {
           alert("Veículo não encontrado.");
         }
@@ -100,30 +88,30 @@ export default {
     },
     
     async toggleFavorito(anuncio) {
-        if (!FavoritosService.getUsuarioLogado()) {
-          alert("Você precisa estar logado para favoritar um anúncio.");
-          return;
+      if (!FavoritosService.getUsuarioLogado()) {
+        alert("Você precisa estar logado para favoritar um anúncio.");
+        return;
+      }
+
+      try {
+        const isFavorito = await FavoritosService.isFavorito(anuncio.id);
+
+        if (isFavorito) {
+          await FavoritosService.removerFavorito(anuncio.id);
+          anuncio.favorito = false;
+        } else {
+          await FavoritosService.adicionarFavorito(anuncio);
+          anuncio.favorito = true;
         }
 
-        try {
-          const isFavorito = await FavoritosService.isFavorito(anuncio.id);
-          
-          if (isFavorito) {
-            await FavoritosService.removerFavorito(anuncio.id);
-            anuncio.favorito = false;
-          } else {
-            await FavoritosService.adicionarFavorito(anuncio);
-            anuncio.favorito = true;
-          }
+        // Atualiza a propriedade de favorito no Firestore
+        await this.daoService.update(anuncio.id, { favorito: anuncio.favorito });
 
-          // Atualiza a propriedade de favorito no Firestore
-          await this.daoService.update(anuncio.id, { favorito: anuncio.favorito });
-
-        } catch (error) {
-          console.error("Erro ao atualizar favorito:", error);
-          alert("Erro ao atualizar o favorito.");
-        }
-      },
+      } catch (error) {
+        console.error("Erro ao atualizar favorito:", error);
+        alert("Erro ao atualizar o favorito.");
+      }
+    },
   },
 };
 </script>
@@ -198,15 +186,6 @@ export default {
   margin-top: 15px;
   font-size: 16px;
   color: #333;
-}
-.seller-name {
-  font-size: 22px;
-  font-weight: bold;
-  color: #5b3199;
-}
-.seller-contact, .seller-location {
-  font-size: 16px;
-  color: #555;
 }
 .loading {
   text-align: center;
