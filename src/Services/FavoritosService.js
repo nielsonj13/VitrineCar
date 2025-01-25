@@ -11,7 +11,7 @@ class FavoritosService {
   async getFavoritos() {
     const user = this.getUsuarioLogado();
     if (!user) {
-      alert("Você precisa estar logado para visualizar favoritos.");
+      
       return [];
     }
 

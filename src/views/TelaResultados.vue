@@ -64,11 +64,11 @@ export default {
   methods: {
     async carregarResultados() {
       try {
-        const termoNormalizado = this.termo.trim().toLowerCase();
+        const termoNormalizado = this.termo.trim();
 
-        // Busca por modelo, marca e categoria
-        const resultadosModelo = await this.daoService.searchByField("modelo", termoNormalizado);
-        const resultadosMarca = await this.daoService.searchByField("marca", termoNormalizado);
+        // Busca por modelo e marca mantendo lowercase, mas categoria como está
+        const resultadosModelo = await this.daoService.searchByField("modelo", termoNormalizado.toLowerCase());
+        const resultadosMarca = await this.daoService.searchByField("marca", termoNormalizado.toLowerCase());
         const resultadosCategoria = await this.daoService.searchByField("categoria", termoNormalizado);
 
         // Combinar os resultados e remover duplicatas

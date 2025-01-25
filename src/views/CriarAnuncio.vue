@@ -242,6 +242,7 @@ export default {
       // Normaliza marca e modelo para minúsculas antes de salvar
       this.anuncio.marca = this.anuncio.marca.trim().toLowerCase();
       this.anuncio.modelo = this.anuncio.modelo.trim().toLowerCase();
+      this.anuncio.categoria = this.anuncio.categoria.trim().toLowerCase();
 
       const id = await this.daoService.insert(this.anuncio);
       alert(`Anúncio finalizado com sucesso! ID: ${id}`);

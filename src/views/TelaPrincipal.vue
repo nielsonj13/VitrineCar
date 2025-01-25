@@ -85,8 +85,8 @@ export default {
       }
     },
     filtrarCategoria(categoria) {
-      this.$router.push({ name: "TelaResultados", query: { termo: categoria }});
-    },
+      this.$router.push({ name: "TelaResultados", query: { termo: categoria.trim() } });
+    }
   },
 };
 </script>

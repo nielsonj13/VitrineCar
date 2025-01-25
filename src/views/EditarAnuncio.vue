@@ -265,6 +265,7 @@ export default {
       // Normalizar os campos antes de salvar
       this.anuncio.marca = this.anuncio.marca.trim().toLowerCase(); // ou .toUpperCase()
       this.anuncio.modelo = this.anuncio.modelo.trim().toLowerCase(); // ou .toUpperCase()
+      this.anuncio.categoria = this.anuncio.categoria.trim().toLowerCase();
 
       await this.daoService.update(this.anuncio.id, this.anuncio);
       alert("Anúncio editado com sucesso!");
