@@ -93,6 +93,13 @@ export default {
 
         if (veiculoData) {
           this.veiculo = veiculoData;
+          // Verifica se o usuário está logado antes de buscar os favoritos
+          if (FavoritosService.getUsuarioLogado()) {
+            const isFavorito = await FavoritosService.isFavorito(veiculoData.id);
+            this.veiculo.favorito = isFavorito;
+          } else {
+            this.veiculo.favorito = false; // Se não estiver logado, desativa a estrela
+          }
           await this.carregarVendedor(veiculoData.userId);
         } else {
           alert("Veículo não encontrado.");
