@@ -28,7 +28,7 @@
               <span>{{ anuncio.anoModelo }}/{{ anuncio.anoFabricacao }}</span>
             </div>
             <div class="card-actions">
-              <button class="btn-ver"><router-link :to="`/veiculo/${anuncio.id}`" class="btn-ver">Ver anúncio</router-link></button>
+              <button class="btn-ver" @click="verAnuncio(anuncio.id)">Ver anúncio</button>
             </div>
           </div>
         </div>
@@ -109,6 +109,9 @@ export default {
         alert("Erro ao atualizar o favorito.");
       }
     },
+    verAnuncio(id) {
+      this.$router.push(`/veiculo/${id}`);
+    }
   },
 };
 </script>

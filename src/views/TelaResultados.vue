@@ -26,7 +26,7 @@
               <span>{{ anuncio.anoModelo }}/{{ anuncio.anoFabricacao }}</span>
             </div>
             <div class="card-actions">
-              <button class="btn-ver"><router-link :to="`/veiculo/${anuncio.id}`" class="btn-ver">Ver anúncio</router-link></button>
+              <button class="btn-ver" @click="verAnuncio(anuncio.id)">Ver anúncio</button>
             </div>
           </div>
         </div>
@@ -64,19 +64,28 @@ export default {
   methods: {
     async carregarResultados() {
       try {
-        const termoNormalizado = this.termo.trim();
+        const termoNormalizado = this.termo.trim().toLowerCase();
 
-        // Busca por modelo e marca mantendo lowercase, mas categoria como está
-        const resultadosModelo = await this.daoService.searchByField("modelo", termoNormalizado.toLowerCase());
-        const resultadosMarca = await this.daoService.searchByField("marca", termoNormalizado.toLowerCase());
+        // Buscar por marca, categoria e todos os modelos
+        const resultadosMarca = await this.daoService.searchByField("marca", termoNormalizado);
         const resultadosCategoria = await this.daoService.searchByField("categoria", termoNormalizado);
+        const todosAnuncios = await this.daoService.getAll(); // Buscar todos os anúncios
 
-        // Combinar os resultados e remover duplicatas
-        const todosResultados = [...resultadosModelo, ...resultadosMarca, ...resultadosCategoria];
+        // Filtrar modelos que contenham pelo menos uma parte do termo buscado
+        const resultadosModelo = todosAnuncios.filter((anuncio) => {
+          const palavrasModelo = anuncio.modelo.toLowerCase().split(" "); // Divide o modelo em palavras
+          return palavrasModelo.some(palavra => palavra.includes(termoNormalizado)); // Verifica se o termo está em alguma palavra
+        });
+
+        // Unir todos os resultados e remover duplicatas
+        const todosResultados = [...resultadosMarca, ...resultadosCategoria, ...resultadosModelo];
+        this.anuncios = todosResultados.filter(
+          (item, index, self) => self.findIndex((v) => v.id === item.id) === index
+        );
 
         // Verificar quais anúncios são favoritos para o usuário logado
         const favoritos = await FavoritosService.getFavoritos();
-        this.anuncios = todosResultados.map((anuncio) => ({
+        this.anuncios = this.anuncios.map((anuncio) => ({
           ...anuncio,
           favorito: favoritos.some((fav) => fav.id === anuncio.id),
         }));
@@ -109,6 +118,9 @@ export default {
         alert("Erro ao atualizar o favorito.");
       }
     },
+    verAnuncio(id) {
+      this.$router.push(`/veiculo/${id}`);
+    }
   },
 };
 </script>
