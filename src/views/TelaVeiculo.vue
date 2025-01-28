@@ -15,14 +15,19 @@
 
       <div class="vehicle-info">
         <div class="price-title">
-          <h1 class="vehicle-title">{{ veiculo.marca }} {{ veiculo.modelo }}</h1>
-          <p class="vehicle-price">R$ {{ veiculo.valor }}</p>
-          <i 
-            :class="veiculo.favorito ? 'bi bi-star-fill' : 'bi bi-star'" 
-            class="favorite-icon" 
-            @click="toggleFavorito(veiculo)"
-          ></i>
+          <div>
+            <h1 class="vehicle-title">{{ veiculo.marca }} {{ veiculo.modelo }}</h1>
+          </div>
+          <div class="price-container">
+            <p class="vehicle-price">R$ {{ veiculo.valor }}</p>
+            <i 
+              :class="veiculo.favorito ? 'bi bi-star-fill' : 'bi bi-star'" 
+              class="favorite-icon" 
+              @click="toggleFavorito(veiculo)"
+            ></i>
+          </div>
         </div>
+
 
         <div class="info-wrapper">
           <!-- Informações do veículo -->
@@ -202,8 +207,11 @@ export default {
 
 .price-title {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: flex-start; /* Alinha os elementos à esquerda */
+  border-bottom: 2px solid #f3f3f3;
+  padding-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .vehicle-title {
@@ -211,12 +219,16 @@ export default {
   font-weight: bold;
   color: #5b3199;
 }
+.price-container {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Espaço entre o preço e o ícone de favorito */
+}
 
 .vehicle-price {
-  font-size: 40px;
+  font-size: 40px; /* Reduza para uma aparência mais equilibrada */
   font-weight: bold;
   color: #5b3199;
-  margin-left: 600px; /* Move o preço para próximo da estrela */
 }
 
 .favorite-icon {

@@ -131,6 +131,9 @@ h2.titulo-roxo {
 }
 
 .card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Garante que os elementos dentro do card sejam espaçados */
   background-color: #fff;
   border-radius: 10px;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);

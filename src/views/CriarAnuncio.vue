@@ -6,13 +6,34 @@
       <h3>Preencha as informações do veículo</h3>
       <div class="form">
         <div class="form-group">
-          <label>Marca</label>
-          <input type="text" v-model="anuncio.marca" placeholder="Digite a marca" />
+          <label for="tipoVeiculo">Tipo de Veículo:</label>
+          <select v-model="tipoVeiculo" @change="carregarMarcas">
+            <option value="carros">Carro</option>
+            <option value="motos">Moto</option>
+            <option value="caminhoes">Caminhão</option>
+          </select>
         </div>
+
         <div class="form-group">
-          <label>Modelo</label>
-          <input type="text" v-model="anuncio.modelo" placeholder="Digite o modelo" /> 
+          <label for="marca">Marca:</label>
+          <select v-model="anuncio.marca" @change="carregarModelos">
+            <option value="" disabled selected>Selecione a marca</option>
+            <option v-for="marca in marcas" :key="marca.codigo" :value="marca.codigo">
+              {{ marca.nome }}
+            </option>
+          </select>
         </div>
+
+        <div class="form-group">
+          <label for="modelo">Modelo:</label>
+          <select v-model="anuncio.modelo">
+            <option value="" disabled selected>Selecione o modelo</option>
+            <option v-for="modelo in modelos" :key="modelo.codigo" :value="modelo.nome">
+              {{ modelo.nome }}
+            </option>
+          </select>
+        </div>
+
         <div class="form-group">
           <label>Ano do Modelo</label>
           <input type="text" v-model="anuncio.anoModelo" placeholder="Digite o ano do modelo" @input="validateNumberInput('anoModelo')"  @blur="validateAnoModelo"/>
@@ -125,6 +146,7 @@ import DAOService from "@/Services/DAOService";
 import { getAuth } from "firebase/auth";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { storage } from "../firebase"; 
+import axios from "axios";
 
 export default {
   name: "CriarAnuncio",
@@ -135,6 +157,7 @@ export default {
     return {
       etapa: 1,
       anuncio: {
+        tipoVeiculo: "carros",  // 'carros', 'motos', 'caminhoes'
         marca: "",
         modelo: "",
         anoModelo: "",
@@ -146,6 +169,8 @@ export default {
         imagens: ["", "", ""],
         userId: null,
       },
+      marcas: [],  // Armazena as marcas da API FIPE
+      modelos: [],  // Armazena os modelos da API FIPE
       opcionais: [
         "Air Bag",
         "Alarme",
@@ -164,6 +189,7 @@ export default {
   created() {
     // Inicializa a instância do DAOService
     this.daoService = new DAOService("anuncios");
+    this.carregarMarcas();
     const auth = getAuth();
     const user = auth.currentUser;
     if (!user) {
@@ -173,6 +199,32 @@ export default {
     }
   },
   methods: {
+
+    async carregarMarcas() {
+    try {
+      const response = await axios.get(
+        `https://parallelum.com.br/fipe/api/v1/${this.tipoVeiculo}/marcas`
+      );
+      this.marcas = response.data;
+    } catch (error) {
+      console.error("Erro ao carregar marcas:", error);
+    }
+  },
+
+  async carregarModelos() {
+    if (!this.anuncio.marca) return;
+    try {
+      const response = await axios.get(
+        `https://parallelum.com.br/fipe/api/v1/${this.tipoVeiculo}/marcas/${this.anuncio.marca}/modelos`
+      );
+      this.modelos = response.data.modelos;
+    } catch (error) {
+      console.error("Erro ao carregar modelos:", error);
+    }
+  },
+
+
+
   validateNumberInput(field) {
     this.anuncio[field] = this.anuncio[field].replace(/\D/g, '');
   },
@@ -227,6 +279,10 @@ export default {
     await Promise.all(promises);
     console.log("Imagens carregadas:", this.anuncio.imagens);
   },
+  formatarModelo(modelo) {
+    if (!modelo) return "";
+    return modelo.split(" ").slice(0, 2).join(" "); // Pega os dois primeiros nomes
+  },
 
   async finalizarAnuncio() {
     try {
@@ -239,8 +295,10 @@ export default {
         return;
       }
 
+      this.anuncio.marca = this.marcas.find(m => m.codigo === this.anuncio.marca)?.nome || "";
       // Normaliza marca e modelo para minúsculas antes de salvar
       this.anuncio.marca = this.anuncio.marca.trim().toLowerCase();
+      this.anuncio.modelo = this.formatarModelo(this.anuncio.modelo);
       this.anuncio.modelo = this.anuncio.modelo.trim().toLowerCase();
       this.anuncio.categoria = this.anuncio.categoria.trim().toLowerCase();
 
