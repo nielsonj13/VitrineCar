@@ -258,6 +258,8 @@ export default {
 
     },
 
+    
+
     formatarKm() {
       if (this.anuncio.km) {
         const numeroLimpo = this.anuncio.km.replace(/\D/g, "");
@@ -291,6 +293,10 @@ export default {
       if (index === -1) this.anuncio.opcionais.push(opcional);
       else this.anuncio.opcionais.splice(index, 1);
     },
+    formatarModelo(modelo) {
+      if (!modelo) return "";
+      return modelo.split(" ").slice(0, 2).join(" "); // Pega os dois primeiros nomes
+    },
     async finalizarAnuncio() {
       try {
         if (!this.anuncio.marca || !this.anuncio.modelo || !this.anuncio.valor) {
@@ -301,6 +307,12 @@ export default {
           alert("Você precisa estar logado para criar um anúncio.");
           return;
         }
+        this.anuncio.modelo = this.formatarModelo(this.anuncio.modelo);
+        this.anuncio.marca = this.marcas.find(m => m.codigo === this.anuncio.marca)?.nome || "";
+        this.anuncio.marca = this.anuncio.marca.trim().toLowerCase(); 
+        this.anuncio.modelo = this.anuncio.modelo.trim().toLowerCase();
+        this.anuncio.categoria = this.anuncio.categoria.trim().toLowerCase();
+
 
         const id = await this.daoService.insert(this.anuncio);
         alert(`Anúncio finalizado com sucesso! ID: ${id}`);
