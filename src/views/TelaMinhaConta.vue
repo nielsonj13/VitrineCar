@@ -31,7 +31,7 @@
             </div>
             <div class="form-group">
               <label for="cpf">CPF</label>
-              <input type="text" id="cpf" v-model="dados.cpf" placeholder="CPF" />
+              <input type="text" id="cpf" v-model="dados.cpf" placeholder="000.000.000-00" @input="formatarCPF" @blur="validarCPF"/>
             </div>
           </form>
         </div>
@@ -42,19 +42,19 @@
           <form>
             <div class="form-group">
               <label for="cep">CEP</label>
-              <input type="text" id="cep" v-model="endereco.cep" placeholder="CEP" />
+              <input type="text" id="cep" v-model="endereco.cep" @blur="buscarCep" @input="formatarCEP" placeholder="00000-000" />
             </div>
             <div class="form-group">
               <label for="cidade">Cidade</label>
-              <input type="text" id="cidade" v-model="endereco.cidade" placeholder="Cidade" />
+              <input type="text" id="cidade" v-model="endereco.cidade" placeholder="Cidade" disabled />
             </div>
             <div class="form-group">
               <label for="estado">Estado</label>
-              <input type="text" id="estado" v-model="endereco.estado" placeholder="Estado" />
+              <input type="text" id="estado" v-model="endereco.estado" placeholder="Estado" disabled />
             </div>
             <div class="form-group">
               <label for="telefone">Telefone</label>
-              <input type="text" id="telefone" v-model="contato.telefone" placeholder="(81) 9 9999-9999" />
+              <input type="text" id="telefone" v-model="contato.telefone" @input="formatarTelefone" placeholder="(99) 99999-9999" />
             </div>
             <div class="form-group">
               <label for="email-contato">Email para Contato</label>
@@ -76,6 +76,7 @@ import Navbar from "../components/NavBar.vue";
 import { getAuth, updateProfile, deleteUser} from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../firebase";
+import axios from "axios"; 
 
 export default {
   name: "MinhaConta",
@@ -138,6 +139,94 @@ export default {
         this.$router.push("/");
       }
     },
+
+    formatarCEP() {
+      let cep = this.endereco.cep.replace(/\D/g, ""); // Remove tudo que não for número
+
+      if (cep.length > 8) {
+        cep = cep.slice(0, 8); // Limita o tamanho máximo
+      }
+
+
+      this.endereco.cep = cep;
+    },
+
+    async buscarCep() {
+      if (this.endereco.cep.length === 8) {
+        try {
+          const response = await axios.get(`https://viacep.com.br/ws/${this.endereco.cep}/json/`);
+          if (response.data.erro) {
+            alert("CEP não encontrado!");
+          } else {
+            this.endereco.cidade = response.data.localidade;
+            this.endereco.estado = response.data.uf;
+          }
+        } catch (error) {
+          console.error("Erro ao buscar CEP:", error);
+          alert("Erro ao buscar CEP.");
+        }
+      }
+    },
+
+    formatarTelefone() {
+      let telefone = this.contato.telefone.replace(/\D/g, ""); // Remove tudo que não for número
+
+      if (telefone.length > 11) {
+        telefone = telefone.slice(0, 11); // Limita o tamanho máximo
+      }
+
+      // Aplica a máscara (99) 99999-9999
+      if (telefone.length <= 10) {
+        telefone = telefone.replace(/(\d{2})(\d{4})(\d{0,4})/, "($1) $2-$3");
+      } else {
+        telefone = telefone.replace(/(\d{2})(\d{5})(\d{0,4})/, "($1) $2-$3");
+      }
+
+      this.contato.telefone = telefone;
+    },
+
+    formatarCPF() {
+      let cpf = this.dados.cpf.replace(/\D/g, ""); // Remove tudo que não for número
+
+      if (cpf.length > 3) cpf = cpf.replace(/^(\d{3})(\d)/, "$1.$2");
+      if (cpf.length > 6) cpf = cpf.replace(/^(\d{3})\.(\d{3})(\d)/, "$1.$2.$3");
+      if (cpf.length > 9) cpf = cpf.replace(/^(\d{3})\.(\d{3})\.(\d{3})(\d)/, "$1.$2.$3-$4");
+
+      this.dados.cpf = cpf.substring(0, 14); // Garante no máximo 14 caracteres
+    },
+
+    validarCPF() {
+      const cpf = this.dados.cpf.replace(/\D/g, ""); // Remove caracteres não numéricos
+
+      if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) {
+        alert("CPF inválido!");
+        this.dados.cpf = ""; // Limpa o campo se for inválido
+        return false;
+      }
+
+      let soma = 0, resto;
+      for (let i = 1; i <= 9; i++) soma += parseInt(cpf[i - 1]) * (11 - i);
+      resto = (soma * 10) % 11;
+      if (resto === 10 || resto === 11) resto = 0;
+      if (resto !== parseInt(cpf[9])) {
+        alert("CPF inválido!");
+        this.dados.cpf = "";
+        return false;
+      }
+
+      soma = 0;
+      for (let i = 1; i <= 10; i++) soma += parseInt(cpf[i - 1]) * (12 - i);
+      resto = (soma * 10) % 11;
+      if (resto === 10 || resto === 11) resto = 0;
+      if (resto !== parseInt(cpf[10])) {
+        alert("CPF inválido!");
+        this.dados.cpf = "";
+        return false;
+      }
+
+      return true;
+    },
+
     async salvarAlteracoes() {
       try {
         const auth = getAuth();
@@ -173,6 +262,7 @@ export default {
         alert("Erro ao salvar os dados.");
       }
     },
+
     async excluirConta() {
       if (confirm("Tem certeza de que deseja excluir sua conta? Esta ação não pode ser desfeita.")) {
         try {
@@ -284,4 +374,5 @@ h3 {
 .delete-button:hover {
   background-color: #c82333;
 }
+
 </style>
