@@ -63,6 +63,8 @@
 
 <script>
 import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { db } from "@/firebase";
+import { doc, setDoc } from "firebase/firestore";
 
 export default {
   name: "TelaCadastro",
@@ -77,19 +79,36 @@ export default {
   },
   methods: {
     async handleCadastro() {
-      if (this.senha !== this.confirmarSenha) {
-        alert("As senhas não conferem!");
-        return;
-      }
-
       try {
+        if (!this.email || !this.nome || !this.sobrenome || !this.senha || !this.confirmarSenha) {
+          alert("Preencha todos os campos obrigatórios!");
+          return;
+        }
+        if (this.senha !== this.confirmarSenha) {
+          alert("As senhas não conferem!");
+          return;
+        }
+
+      
         const auth = getAuth();
         const userCredential = await createUserWithEmailAndPassword(auth, this.email, this.senha);
+        const user = userCredential.user;
         
-        // Atualizar o perfil do usuário
-        await updateProfile(userCredential.user, {
+        // Aguarde a atualização do perfil antes de prosseguir
+        await updateProfile(user, {
           displayName: `${this.nome} ${this.sobrenome}`,
         });
+
+        // Criar o documento do usuário na coleção "usuarios"
+        const userRef = doc(db, "usuarios", user.uid);
+        await setDoc(userRef, {
+          nome: this.nome,
+          sobrenome: this.sobrenome,
+          email: this.email,
+          endereco: { cidade: "", estado: "", cep: "" }, // Dados vazios para preencher depois
+          contato: { telefone: "", email: this.email } // Email já preenchido, telefone em branco
+        });
+        
 
         alert("Cadastro realizado com sucesso!");
         this.$router.push("/");

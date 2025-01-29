@@ -307,7 +307,7 @@ export default {
   async salvarEdicao() {
     try {
       // Verifica se todos os campos obrigatórios estão preenchidos
-      if (!this.anuncio.marca || !this.anuncio.modelo || !this.anuncio.valor) {
+      if (!this.anuncio.valor) {
         alert("Por favor, preencha todos os campos obrigatórios.");
         return;
       }
@@ -316,11 +316,26 @@ export default {
         return;
       }
 
-      this.anuncio.marca = this.marcas.find(m => m.codigo === this.anuncio.marca)?.nome || "";
+      // Buscar o anúncio original antes da edição
+      const anuncioOriginal = await this.daoService.get(this.anuncio.id);
+
+      // Se a marca não foi alterada, mantém a original
+      if (!this.anuncio.marca) {
+        this.anuncio.marca = anuncioOriginal.marca;
+      } else {
+        this.anuncio.marca = this.marcas.find(m => m.codigo === this.anuncio.marca)?.nome || anuncioOriginal.marca;
+      }
+
+      // Se o modelo não foi alterado, mantém o original
+      if (!this.anuncio.modelo) {
+        this.anuncio.modelo = anuncioOriginal.modelo;
+      } else {
+        this.anuncio.modelo = this.formatarModelo(this.anuncio.modelo);
+      }
+
       // Normalizar os campos antes de salvar
-      this.anuncio.marca = this.anuncio.marca.trim().toLowerCase(); // ou .toUpperCase()
-      this.anuncio.modelo = this.formatarModelo(this.anuncio.modelo);
-      this.anuncio.modelo = this.anuncio.modelo.trim().toLowerCase(); // ou .toUpperCase()
+      this.anuncio.marca = this.anuncio.marca.trim().toLowerCase(); 
+      this.anuncio.modelo = this.anuncio.modelo.trim().toLowerCase();
       this.anuncio.categoria = this.anuncio.categoria.trim().toLowerCase();
 
       await this.daoService.update(this.anuncio.id, this.anuncio);
@@ -334,7 +349,7 @@ export default {
       console.error("Erro ao salvar as alterações:", error);
       alert("Erro ao editar o anúncio. Verifique os logs.");
     }
-  },
+},
 
   resetarFormulario() {
     this.etapa = 1;
