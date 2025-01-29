@@ -18,26 +18,42 @@
           <div class="car-info">
             <div class="title-container">
               <h3>{{ anuncio.marca }} {{ anuncio.modelo }}</h3>
-              <i
+              <template v-if="!anuncio.vendido">
+              <i 
                 :class="anuncio.favorito ? 'bi bi-star-fill' : 'bi bi-star'"
                 class="favorite-icon"
                 @click="toggleFavorito(anuncio)"
               ></i>
+            </template>
             </div>
+            <p v-if="anuncio.vendido" class="vendido-label">Vendido</p>
             <p>R$ {{ anuncio.valor }}</p>
             <span>{{ anuncio.anoModelo }}/{{ anuncio.anoFabricacao }}</span>
           </div>
           <div class="card-actions">
+          <!-- Veículos Ativos -->
+          <template v-if="!anuncio.vendido">
             <button class="btn-ver" @click="verAnuncio(anuncio.id)">Ver anúncio</button>
+            <button class="btn-vendido" @click="marcarComoVendido(anuncio.id)">
+              <i class="bi bi-check-circle"></i> Marcar como Vendido
+            </button>
             <button class="btn-editar" @click="editarAnuncio(anuncio.id)">
               <i class="bi bi-pencil-fill"></i> Editar anúncio
             </button>
             <button class="btn-excluir" @click="excluirAnuncio(anuncio.id)">
               <i class="bi bi-trash-fill"></i> Excluir anúncio
             </button>
-          </div>
-        </div>
+          </template>
 
+          <!-- Veículos Vendidos -->
+          <template v-else>
+            <div class="vendido-banner">
+              <i class="bi bi-check-circle-fill"></i>
+              <p>Este Veículo já foi Vendido</p>
+            </div>
+          </template>
+        </div>
+        </div>
         <div class="new-card" @click="criarAnuncio">
           <div class="new-icon">+</div>
           <p>Criar Novo Anúncio</p>
@@ -52,6 +68,7 @@ import Navbar from "../components/NavBar.vue";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import DAOService from "@/Services/DAOService";
 import FavoritosService from "@/Services/FavoritosService"; 
+import VendidosService from "@/Services/VendidosService";
 
 export default {
   name: "MeusAnuncios",
@@ -62,6 +79,7 @@ export default {
     return {
       anuncios: [],
       daoService: new DAOService("anuncios"),
+      vendidosService: new DAOService("veiculos_vendidos"),
       userId: null,
     };
   },
@@ -83,13 +101,16 @@ export default {
 
     async carregarAnuncios() {
       try {
-        const anunciosTodos = await this.daoService.getAll();
-        this.anuncios = anunciosTodos
+        const anunciosAtivos = await this.daoService.getAll();
+        const anunciosVendidos = await VendidosService.obterTodosVendidos(); 
+
+        this.anuncios = [...anunciosAtivos, ...anunciosVendidos]
           .filter((anuncio) => anuncio.userId === this.userId)
           .map(async (anuncio) => {
             const isFavorito = await FavoritosService.isFavorito(anuncio.id);
             return { ...anuncio, favorito: isFavorito };
           });
+
         this.anuncios = await Promise.all(this.anuncios);
       } catch (error) {
         console.error("Erro ao carregar anúncios:", error);
@@ -97,9 +118,35 @@ export default {
       }
     },
 
+    async marcarComoVendido(id) {
+      try {
+        const anuncio = await this.daoService.get(id);
+
+        if (!anuncio) {
+          alert("Anúncio não encontrado!");
+          return;
+        }
+
+        // Atualizar status do veículo na coleção de ativos
+        await this.daoService.update(id, { vendido: true });
+
+        // Adicionar à coleção de veículos vendidos
+        await VendidosService.adicionarVeiculoVendido({ ...anuncio, vendido: true });
+
+        // Remover da coleção de anúncios ativos
+        await this.daoService.delete(id);
+
+        alert("Veículo marcado como vendido!");
+        this.carregarAnuncios();
+      } catch (error) {
+        console.error("Erro ao marcar como vendido:", error);
+        alert("Erro ao marcar o veículo como vendido.");
+      }
+    },
+
     async toggleFavorito(anuncio) {
       if (!FavoritosService.getUsuarioLogado()) {
-        alert("Você precisa estar logado para favoritar um anúncio.");
+        alert('Você precisa estar logado para favoritar um anúncio');
         return;
       }
 
@@ -262,6 +309,57 @@ h2 {
   background-color: #dc3545;
   color: white;
 }
+
+.vendido-label {
+  display: inline-block;
+  background-color: #28a745;
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  padding: 5px 10px;
+  border-radius: 5px;
+  margin-top: 10px;
+}
+
+.vendido-banner {
+  background-color: #e4ffdd; /* Fundo vermelho claro */
+  color: #28a745; /* Vermelho escuro */
+  font-weight: bold;
+  text-align: center;
+  padding: 12px; /* Aumenta o padding para centralizar melhor */
+  border-radius: 8px;
+  border: 1px solid #28a745;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px; /* Espaçamento entre ícone e texto */
+  height: 80px; /* Define uma altura fixa */
+}
+
+.vendido-banner i {
+  font-size: 20px;
+  color: #28a745;
+}
+
+.vendido-banner p {
+  margin: 0; /* Remove margens extras que estavam desalinhando o texto */
+  line-height: 1.2; /* Ajusta a altura da linha para melhor alinhamento */
+}
+
+.btn-vendido {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btn-vendido:hover {
+  background-color: #218838;
+}
+
 
 .new-card {
   background-color: #f3f3f3;
