@@ -36,15 +36,20 @@
 
         <div class="form-group">
           <label>Ano do Modelo</label>
-          <input type="text" v-model="anuncio.anoModelo" placeholder="Digite o ano do modelo" @input="validateNumberInput('anoModelo')"  @blur="validateAnoModelo"/>
+          <input type="text" v-model="anuncio.anoModelo" placeholder="Digite o ano do modelo" @input="validateNumberInput('anoModelo')" @blur="validateAnoModelo" />
         </div>
         <div class="form-group">
           <label>Ano de Fabricação</label>
-          <input type="text" v-model="anuncio.anoFabricacao" placeholder="Digite o ano de fabricação"  @input="validateNumberInput('anoFabricacao')"  @blur="validateAnoModelo"/>
+          <input type="text" v-model="anuncio.anoFabricacao" placeholder="Digite o ano de fabricação" @input="validateNumberInput('anoFabricacao')" @blur="validateAnoModelo" />
         </div>
         <div class="form-group">
           <label>Quilometragem (km)</label>
-          <input type="text" v-model="anuncio.km" placeholder="Digite a quilometragem" @input="validateNumberInput('km')"/>
+          <input
+            type="text"
+            v-model="anuncio.km"
+            placeholder="Digite a quilometragem"
+            @input="formatarKm"
+          />
         </div>
         <div class="form-group">
           <label>Cor</label>
@@ -89,7 +94,13 @@
         </div>
         <div class="form-group">
           <label>Valor</label>
-          <input type="text" v-model="anuncio.valor" placeholder="Digite o valor do veículo" class="input-valor" @input="validateNumberInput('valor')"/>
+          <input
+            type="text"
+            v-model="anuncio.valor"
+            placeholder="Digite o valor do veículo"
+            class="input-valor"
+            @input="formatarValor"
+          />
         </div>
       </div>
       <div class="actions">
@@ -115,7 +126,7 @@
         <button class="btn-next" @click="avancarEtapa">Próximo</button>
       </div>
     </div>
-  
+
     <div v-else-if="etapa === 3" class="content">
       <h3>Adicionar fotos do veículo</h3>
       <div class="upload-box">
@@ -144,8 +155,6 @@
 import Navbar from "../components/NavBar.vue";
 import DAOService from "@/Services/DAOService";
 import { getAuth } from "firebase/auth";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { storage } from "../firebase"; 
 import axios from "axios";
 
 export default {
@@ -157,7 +166,7 @@ export default {
     return {
       etapa: 1,
       anuncio: {
-        tipoVeiculo: "carros",  // 'carros', 'motos', 'caminhoes'
+        tipoVeiculo: "carros",
         marca: "",
         modelo: "",
         anoModelo: "",
@@ -169,8 +178,8 @@ export default {
         imagens: ["", "", ""],
         userId: null,
       },
-      marcas: [],  // Armazena as marcas da API FIPE
-      modelos: [],  // Armazena os modelos da API FIPE
+      marcas: [],
+      modelos: [],
       opcionais: [
         "Air Bag",
         "Alarme",
@@ -183,154 +192,124 @@ export default {
         "Tração 4X4",
         "Desembaçador Traseiro",
       ],
-      daoService: null, 
+      daoService: null,
     };
   },
   created() {
-    // Inicializa a instância do DAOService
     this.daoService = new DAOService("anuncios");
     this.carregarMarcas();
     const auth = getAuth();
     const user = auth.currentUser;
     if (!user) {
-      this.$router.push("/login");  // Redireciona se não estiver logado
+      this.$router.push("/login");
     } else {
-      this.anuncio.userId = user.uid;  // Vincula o anúncio ao usuário logado
+      this.anuncio.userId = user.uid;
     }
   },
   methods: {
-
     async carregarMarcas() {
-    try {
-      const response = await axios.get(
-        `https://parallelum.com.br/fipe/api/v1/${this.tipoVeiculo}/marcas`
-      );
-      this.marcas = response.data;
-    } catch (error) {
-      console.error("Erro ao carregar marcas:", error);
-    }
-  },
-
-  async carregarModelos() {
-    if (!this.anuncio.marca) return;
-    try {
-      const response = await axios.get(
-        `https://parallelum.com.br/fipe/api/v1/${this.tipoVeiculo}/marcas/${this.anuncio.marca}/modelos`
-      );
-      this.modelos = response.data.modelos;
-    } catch (error) {
-      console.error("Erro ao carregar modelos:", error);
-    }
-  },
-
-
-
-  validateNumberInput(field) {
-    this.anuncio[field] = this.anuncio[field].replace(/\D/g, '');
-  },
-  validateAnoModelo() {
-    if (this.anuncio.anoFabricacao && this.anuncio.anoModelo) {
-      const anoFabricacao = parseInt(this.anuncio.anoFabricacao);
-      const anoModelo = parseInt(this.anuncio.anoModelo);
-      if (anoModelo < anoFabricacao || anoModelo > anoFabricacao + 1) {
-        alert('O ano do modelo deve ser igual ou no máximo 1 ano a mais que o ano de fabricação.');
-        this.anuncio.anoModelo = '';
+      try {
+        const response = await axios.get(
+          `https://parallelum.com.br/fipe/api/v1/${this.tipoVeiculo}/marcas`
+        );
+        this.marcas = response.data;
+      } catch (error) {
+        console.error("Erro ao carregar marcas:", error);
       }
+    },
+
+    async carregarModelos() {
+      if (!this.anuncio.marca) return;
+      try {
+        const response = await axios.get(
+          `https://parallelum.com.br/fipe/api/v1/${this.tipoVeiculo}/marcas/${this.anuncio.marca}/modelos`
+        );
+        this.modelos = response.data.modelos;
+      } catch (error) {
+        console.error("Erro ao carregar modelos:", error);
+      }
+    },
+
+    validateNumberInput(field) {
+      this.anuncio[field] = this.anuncio[field].replace(/\D/g, "");
+    },
+
+    formatarValor() {
+  if (this.anuncio.valor) {
+    // Remove caracteres não numéricos
+    let numeroLimpo = this.anuncio.valor.replace(/\D/g, "");
+
+    // Se não houver número, define o campo como vazio
+    if (!numeroLimpo) {
+      this.anuncio.valor = "";
+      return;
     }
-  },
-  avancarEtapa() {
-    if (this.etapa < 3) this.etapa++;
-  },
-  voltarEtapa() {
-    if (this.etapa > 1) this.etapa--;
-  },
-  toggleOpcional(opcional) {
-    const index = this.anuncio.opcionais.indexOf(opcional);
-    if (index === -1) this.anuncio.opcionais.push(opcional);
-    else this.anuncio.opcionais.splice(index, 1);
-  },
-  async uploadImagens(event) {
-    const files = event.target.files;
-    const promises = [];
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const storageRef = ref(storage, `images/${file.name}`);
-      const uploadTask = uploadBytesResumable(storageRef, file);
+    // Divide por 100 para obter valores corretos e formata sem "R$"
+    const valorFormatado = new Intl.NumberFormat("pt-BR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(parseFloat(numeroLimpo) / 100);
 
-      promises.push(
-        new Promise((resolve, reject) => {
-          uploadTask.on(
-            "state_changed",
-            (snapshot) => {
-              // Progresso do upload
-            },
-            (error) => reject(error),
-            async () => {
-              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-              this.anuncio.imagens.push(downloadURL);
-              resolve();
-            }
+    // Atualiza o campo sem adicionar "R$"
+    this.anuncio.valor = valorFormatado;
+  }
+
+    },
+
+    formatarKm() {
+      if (this.anuncio.km) {
+        const numeroLimpo = this.anuncio.km.replace(/\D/g, "");
+        const kmFormatado = new Intl.NumberFormat("pt-BR").format(
+          parseInt(numeroLimpo)
+        );
+        this.anuncio.km = kmFormatado;
+      }
+    },
+
+    validateAnoModelo() {
+      if (this.anuncio.anoFabricacao && this.anuncio.anoModelo) {
+        const anoFabricacao = parseInt(this.anuncio.anoFabricacao);
+        const anoModelo = parseInt(this.anuncio.anoModelo);
+        if (anoModelo < anoFabricacao || anoModelo > anoFabricacao + 1) {
+          alert(
+            "O ano do modelo deve ser igual ou no máximo 1 ano a mais que o ano de fabricação."
           );
-        })
-      );
-    }
-
-    await Promise.all(promises);
-    console.log("Imagens carregadas:", this.anuncio.imagens);
-  },
-  formatarModelo(modelo) {
-    if (!modelo) return "";
-    return modelo.split(" ").slice(0, 2).join(" "); // Pega os dois primeiros nomes
-  },
-
-  async finalizarAnuncio() {
-    try {
-      if (!this.anuncio.marca || !this.anuncio.modelo || !this.anuncio.valor) {
-        alert("Por favor, preencha todos os campos obrigatórios.");
-        return;
+          this.anuncio.anoModelo = "";
+        }
       }
-      if (!this.anuncio.userId) {
-        alert("Você precisa estar logado para criar um anúncio.");
-        return;
+    },
+    avancarEtapa() {
+      if (this.etapa < 3) this.etapa++;
+    },
+    voltarEtapa() {
+      if (this.etapa > 1) this.etapa--;
+    },
+    toggleOpcional(opcional) {
+      const index = this.anuncio.opcionais.indexOf(opcional);
+      if (index === -1) this.anuncio.opcionais.push(opcional);
+      else this.anuncio.opcionais.splice(index, 1);
+    },
+    async finalizarAnuncio() {
+      try {
+        if (!this.anuncio.marca || !this.anuncio.modelo || !this.anuncio.valor) {
+          alert("Por favor, preencha todos os campos obrigatórios.");
+          return;
+        }
+        if (!this.anuncio.userId) {
+          alert("Você precisa estar logado para criar um anúncio.");
+          return;
+        }
+
+        const id = await this.daoService.insert(this.anuncio);
+        alert(`Anúncio finalizado com sucesso! ID: ${id}`);
+        this.$router.push("/TelaMeusAnuncios");
+      } catch (error) {
+        console.error("Erro ao salvar o anúncio:", error);
+        alert("Erro ao finalizar o anúncio. Verifique os logs.");
       }
-
-      this.anuncio.marca = this.marcas.find(m => m.codigo === this.anuncio.marca)?.nome || "";
-      // Normaliza marca e modelo para minúsculas antes de salvar
-      this.anuncio.marca = this.anuncio.marca.trim().toLowerCase();
-      this.anuncio.modelo = this.formatarModelo(this.anuncio.modelo);
-      this.anuncio.modelo = this.anuncio.modelo.trim().toLowerCase();
-      this.anuncio.categoria = this.anuncio.categoria.trim().toLowerCase();
-
-      const id = await this.daoService.insert(this.anuncio);
-      alert(`Anúncio finalizado com sucesso! ID: ${id}`);
-      console.log(this.anuncio);
-
-      this.$router.push("/TelaMeusAnuncios");
-
-      this.resetarFormulario();
-    } catch (error) {
-      console.error("Erro ao salvar o anúncio:", error);
-      alert("Erro ao finalizar o anúncio. Verifique os logs.");
-    }
+    },
   },
-
-  resetarFormulario() {
-    this.etapa = 1;
-    this.anuncio = {
-      marca: "",
-      modelo: "",
-      anoModelo: "",
-      anoFabricacao: "",
-      km: "",
-      valor: "",
-      cor: "",
-      opcionais: [],
-      imagens: [],
-    };
-  },
-},
-
 };
 </script>
 
