@@ -1,62 +1,84 @@
 <template>
-  <div class="container">
-    <!-- Área da imagem e logo -->
-    <div class="image-section">
-    </div>
+  <div class="container-fluid vh-100 d-flex align-items-center justify-content-center bg-light">
+    <div class="row shadow-lg rounded overflow-hidden login-container">
+      <!-- Área da imagem -->
+      <div class="col-md-6 d-none d-md-flex align-items-center justify-content-center image-section">
+      </div>
 
-    <!-- Área de cadastro -->
-    <div class="login-section">
-      <img class="logo" src="/logos/logo_vitrinecar.png" alt="VitrineCar">
-      <form @submit.prevent="handleCadastro">
-        <label for="email">Email</label>
-        <input 
-          type="email" 
-          id="email" 
-          v-model="email" 
-          placeholder="user@exemplo.com" 
-          required
-        />
+      <!-- Área de cadastro -->
+      <div class="col-md-6 p-5 bg-white form-section">
+        <h2 class="fw-bold text-center mb-3">Crie sua conta</h2>
 
-        <label for="nome">Nome</label>
-        <input 
-          type="text" 
-          id="nome" 
-          v-model="nome" 
-          placeholder="Nome" 
-          required
-        />
+        <form @submit.prevent="handleCadastro">
+          <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input 
+              type="email" 
+              v-model="email" 
+              id="email" 
+              class="form-control" 
+              placeholder="user@exemplo.com" 
+              required
+            />
+          </div>
 
-        <label for="sobrenome">Sobrenome</label>
-        <input 
-          type="text" 
-          id="sobrenome" 
-          v-model="sobrenome" 
-          placeholder="Sobrenome" 
-          required
-        />
+          <div class="mb-3">
+            <label for="nome" class="form-label">Nome</label>
+            <input 
+              type="text" 
+              v-model="nome" 
+              id="nome" 
+              class="form-control" 
+              placeholder="Digite seu nome" 
+              required
+            />
+          </div>
 
-        <label for="senha">Senha</label>
-        <input 
-          type="password" 
-          id="senha" 
-          v-model="senha" 
-          placeholder="Senha" 
-          required
-        />
+          <div class="mb-3">
+            <label for="sobrenome" class="form-label">Sobrenome</label>
+            <input 
+              type="text" 
+              v-model="sobrenome" 
+              id="sobrenome" 
+              class="form-control" 
+              placeholder="Digite seu sobrenome" 
+              required
+            />
+          </div>
 
-        <label for="confirmar-senha">Confirmar Senha</label>
-        <input 
-          type="password" 
-          id="confirmar-senha" 
-          v-model="confirmarSenha" 
-          placeholder="Confirmar senha" 
-          required
-        />
+          <div class="mb-3">
+            <label for="senha" class="form-label">Senha</label>
+            <input 
+              type="password" 
+              v-model="senha" 
+              id="senha" 
+              class="form-control" 
+              placeholder="Digite sua senha" 
+              required
+            />
+          </div>
 
-        <button type="submit">Cadastrar-se</button>
+          <div class="mb-3">
+            <label for="confirmar-senha" class="form-label">Confirmar Senha</label>
+            <input 
+              type="password" 
+              v-model="confirmarSenha" 
+              id="confirmar-senha" 
+              class="form-control" 
+              placeholder="Confirme sua senha" 
+              required
+            />
+          </div>
 
-        <router-link to="/login">Já tem conta? Faça seu Login</router-link>
-      </form>
+          <button type="submit" class="btn btn-primary w-100 py-2">
+            Cadastrar-se
+          </button>
+
+          <div class="text-center mt-3">
+            <router-link to="/login" class="text-decoration-none">Já tem uma conta? Faça login</router-link>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 </template>
@@ -89,29 +111,25 @@ export default {
           return;
         }
 
-      
         const auth = getAuth();
         const userCredential = await createUserWithEmailAndPassword(auth, this.email, this.senha);
         const user = userCredential.user;
         
-        // Aguarde a atualização do perfil antes de prosseguir
         await updateProfile(user, {
           displayName: `${this.nome} ${this.sobrenome}`,
         });
 
-        // Criar o documento do usuário na coleção "usuarios"
         const userRef = doc(db, "usuarios", user.uid);
         await setDoc(userRef, {
           nome: this.nome,
           sobrenome: this.sobrenome,
           email: this.email,
-          endereco: { cidade: "", estado: "", cep: "" }, // Dados vazios para preencher depois
-          contato: { telefone: "", email: this.email } // Email já preenchido, telefone em branco
+          endereco: { cidade: "", estado: "", cep: "" },
+          contato: { telefone: "", email: this.email }
         });
-        
 
         alert("Cadastro realizado com sucesso!");
-        this.$router.push("/");
+        this.$router.push("/login");
       } catch (error) {
         alert("Erro ao cadastrar: " + error.message);
         console.error(error);
@@ -121,103 +139,53 @@ export default {
 };
 </script>
 
-
 <style scoped>
-/* Estilos gerais */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* Layout principal */
+.login-container {
+  max-width: 900px;
+  width: 100%;
+  background: #fff;
+  border-radius: 15px;
 }
 
-body {
-  font-family: Arial, sans-serif;
-  background-color: #F3F3F3;
-}
-
-/* Container principal ocupando a tela inteira */
-.container {
-  display: flex;
-  width: 100vw;
-  height: 100vh;
-  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-}
-
-/* Área de imagem e logo */
+/* Estilo da área de imagem */
 .image-section {
-  background: url('/logos/imagem_login.png') center center/cover no-repeat;
-  width: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  text-align: center;
-  padding: 20px;
+  background: url('/logos/imagem_login.png') no-repeat center center;
+  background-size: cover;
+  position: relative;
 }
 
-/* Área de cadastro */
-.login-section {
-  width: 50%;
-  background-color: #FFFFFF;
+/* Formulário */
+.form-section {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 40px;
 }
 
-/* Estilo para a logo */
-.logo {
-  width: 250px;
-  height: auto;
-  margin: 0 auto 20px;
-  display: block;
+.form-section h2 {
+  color: #343a40;
 }
 
-.login-section h2 {
-  font-size: 32px;
-  color: #531B76;
-  margin-bottom: 20px;
-}
-
-.login-section label {
-  font-size: 14px;
-  color: #333;
-  margin-bottom: 5px;
-  display: block;
-}
-
-.login-section input {
-  width: 100%;
+.form-control {
   padding: 12px;
   font-size: 16px;
-  border: 1px solid #CCC;
-  border-radius: 5px;
-  margin-bottom: 20px;
-  background-color: #F3F3F3;
 }
 
-.login-section button {
-  width: 100%;
-  padding: 15px;
-  font-size: 18px;
+.btn-primary {
+  background: #5B3199;
   border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  background-color: #531B76;
-  color: #FFF;
-  margin-bottom: 10px;
+  transition: all 0.3s;
 }
 
-.login-section a {
-  font-size: 14px;
-  color: #531B76;
-  text-decoration: none;
-  display: inline-block;
-  margin-top: 10px;
+.btn-primary:hover {
+  background: #3a1e66;
 }
 
-.login-section a:hover {
+.text-decoration-none {
+  color: #5B3199;
+}
+
+.text-decoration-none:hover {
   text-decoration: underline;
 }
 </style>

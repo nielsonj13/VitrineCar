@@ -1,41 +1,47 @@
 <template>
-  <div class="container">
-    <!-- Área da imagem e logo -->
-    <div class="image-section"></div>
+  <div class="container-fluid vh-100 d-flex align-items-center justify-content-center bg-light">
+    <div class="row shadow-lg rounded overflow-hidden login-container">
+      <!-- Área da imagem -->
+      <div class="col-md-6 d-none d-md-flex align-items-center justify-content-center image-section">
+      </div>
 
-    <!-- Área de login -->
-    <div class="login-section">
-      <h2 class="welcome-text">
-        Bem-vindo a<br />
-        <span class="highlight">VitrineCar</span>
-      </h2>
+      <!-- Área de login -->
+      <div class="col-md-6 p-5 bg-white login-section">
+        <h2 class="fw-bold text-center mb-4">Acesse sua conta</h2>
 
-      <form @submit.prevent="login">
-        <label for="email">Email</label>
-        <input 
-          type="email" 
-          v-model="email" 
-          id="email" 
-          placeholder="user@exemplo.com" 
-          required 
-        />
+        <form @submit.prevent="login">
+          <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input 
+              type="email" 
+              v-model="email" 
+              id="email" 
+              class="form-control" 
+              placeholder="user@exemplo.com" 
+              required 
+            />
+          </div>
 
-        <label for="password">Senha</label>
-        <input 
-          type="password" 
-          v-model="password" 
-          id="password" 
-          placeholder="senha" 
-          required 
-        />
+          <div class="mb-3">
+            <label for="password" class="form-label">Senha</label>
+            <input 
+              type="password" 
+              v-model="password" 
+              id="password" 
+              class="form-control" 
+              placeholder="Digite sua senha" 
+              required 
+            />
+          </div>
 
-        <button type="submit">Entrar</button>
+          <button type="submit" class="btn btn-primary w-100 py-2">Entrar</button>
 
-        <div>
-          <router-link to="/esqueceu-senha">Esqueceu a senha?</router-link>
-          <router-link to="/cadastro">Cadastre-se</router-link>
-        </div>
-      </form>
+          <div class="text-center mt-3">
+            <router-link to="/esqueceu-senha" class="text-decoration-none me-3">Esqueceu a senha?</router-link>
+            <router-link to="/cadastro" class="text-decoration-none">Cadastre-se</router-link>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 </template>
@@ -67,107 +73,69 @@ export default {
 </script>
 
 <style scoped>
-/* Estilos gerais */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* Layout principal */
+.login-container {
+  max-width: 900px;
+  width: 100%;
+  background: #fff;
+  border-radius: 15px;
 }
 
-body {
-  font-family: Arial, sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background-color: #F3F3F3;
-}
-
-/* Container principal ocupando a tela inteira */
-.container {
-  display: flex;
-  width: 80%;
-  height: 100vh;
-  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-}
-
-/* Área de imagem e logo */
+/* Estilo da área de imagem */
 .image-section {
   background: url('/logos/imagem_login.png') no-repeat center center;
   background-size: cover;
-  width: 70%;
+  position: relative;
+}
+
+.overlay {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.6);
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: white;
   text-align: center;
   padding: 20px;
 }
 
-/* Área de login */
+.highlight {
+  color: #FFC107;
+}
+
+/* Formulário de login */
 .login-section {
-  width: 40%;
-  height: 100%;
-  background-color: #FFFFFF;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 40px;
 }
 
-/* Texto de Bem-vindo */
-.welcome-text {
-  font-size: 32px;
-  color: #531B76;
-  text-align: center;
-  margin-bottom: 30px;
-  line-height: 1.5;
+.login-section h2 {
+  color: #343a40;
 }
 
-.welcome-text .highlight {
+.form-control {
+  padding: 12px;
+  font-size: 16px;
+}
+
+.btn-primary {
+  background: #5B3199;
+  border: none;
+  transition: all 0.3s;
+}
+
+.btn-primary:hover {
+  background: #3a1e66;
+}
+
+.text-decoration-none {
   color: #5B3199;
 }
 
-.login-section label {
-  font-size: 14px;
-  color: #333;
-  margin-bottom: 5px;
-  display: block;
-}
-
-.login-section input {
-  width: 100%;
-  padding: 12px;
-  font-size: 16px;
-  border: 1px solid #CCC;
-  border-radius: 5px;
-  margin-bottom: 20px;
-  background-color: #F3F3F3;
-}
-
-.login-section button {
-  width: 100%;
-  padding: 15px;
-  font-size: 18px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  background-color: #531B76;
-  color: #FFF;
-  margin-bottom: 10px;
-}
-
-.login-section a {
-  font-size: 14px;
-  color: #531B76;
-  text-decoration: none;
-  display: inline-block;
-  margin-top: 10px;
-}
-
-.login-section a:hover {
+.text-decoration-none:hover {
   text-decoration: underline;
 }
 </style>

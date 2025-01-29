@@ -1,32 +1,36 @@
 <template>
-  <div class="container">
-    <!-- Seção da imagem -->
-    <div class="image-section"></div>
+  <div class="container-fluid vh-100 d-flex align-items-center justify-content-center bg-light">
+    <div class="row shadow-lg rounded overflow-hidden login-container">
+      <!-- Área da imagem -->
+      <div class="col-md-6 d-none d-md-flex align-items-center justify-content-center image-section">
+      </div>
 
-    <!-- Seção do formulário -->
-    <div class="form-section">
-      <img class="logo" src="/public/logos/logo_vitrinecar.png" alt="VitrineCar">
-      <h2 class="form-title">Esqueceu a senha?</h2>
-      <p class="instructions">
-        Informe seu email cadastrado para receber instruções de redefinição de senha
-      </p>
-      <form @submit.prevent="recuperarSenha">
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input 
-            type="email" 
-            id="email" 
-            v-model="email" 
-            placeholder="user@exemplo.com" 
-            required
-          />
-        </div>
-        <button type="submit" class="submit-button" :disabled="loading">
-          {{ loading ? "Enviando..." : "Enviar" }}
-        </button>
-      </form>
-      <div class="form-footer">
-        <p>Retornar para <router-link to="/">Login</router-link></p>
+      <!-- Área do formulário -->
+      <div class="col-md-6 p-5 bg-white form-section">
+        <h2 class="fw-bold text-center mb-3">Esqueceu sua senha?</h2>
+        <p class="text-center text-muted">Informe seu email cadastrado para receber instruções de redefinição de senha</p>
+
+        <form @submit.prevent="recuperarSenha">
+          <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input 
+              type="email" 
+              v-model="email" 
+              id="email" 
+              class="form-control" 
+              placeholder="user@exemplo.com" 
+              required
+            />
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100 py-2" :disabled="loading">
+            {{ loading ? "Enviando..." : "Enviar" }}
+          </button>
+
+          <div class="text-center mt-3">
+            <router-link to="/login" class="text-decoration-none">Voltar para Login</router-link>
+          </div>
+        </form>
       </div>
     </div>
   </div>
@@ -67,118 +71,52 @@ export default {
 </script>
 
 <style scoped>
-/* Estilo do body e fundo geral */
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  height: 100vh;
-  width: 100vw;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #F3F3F3;
-  overflow: hidden;
+/* Layout principal */
+.login-container {
+  max-width: 900px;
+  width: 100%;
+  background: #fff;
+  border-radius: 15px;
 }
 
-/* Container principal */
-.container {
-  display: flex;
-  width: 100vw;
-  height: 100vh;
-  background-color: #FFF;
-}
-
-/* Estilo da imagem e fundo do carro */
+/* Estilo da área de imagem */
 .image-section {
-  background-image: url('/public/logos/imagem_login.png');
+  background: url('/logos/imagem_login.png') no-repeat center center;
   background-size: cover;
-  background-position: center;
-  width: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  text-align: center;
+  position: relative;
 }
 
-/* Seção do formulário */
+/* Formulário */
 .form-section {
-  padding: 40px;
-  width: 50%;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
-.logo {
-  width: 250px;
-  height: auto;
-  margin: 0 auto 10px;
-  display: block;
+.form-section h2 {
+  color: #343a40;
 }
 
-.form-title {
-  color: #531B76;
-  margin: 5px 0 20px;
-  font-size: 28px;
-  text-align: center;
-}
-
-.instructions {
-  text-align: center;
-  color: #666;
-  font-size: 14px;
-  margin-bottom: 20px;
-}
-
-.form-group {
-  margin-bottom: 15px;
-  display: flex;
-  flex-direction: column;
-}
-
-.form-group label {
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 5px;
-}
-
-.form-group input {
-  padding: 10px;
-  border: 1px solid #CCC;
-  border-radius: 5px;
+.form-control {
+  padding: 12px;
   font-size: 16px;
 }
 
-.submit-button {
-  width: 100%;
-  padding: 15px;
-  font-size: 18px;
+.btn-primary {
+  background: #5B3199;
   border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  background-color: #531B76;
-  color: #FFF;
-  margin-bottom: 10px;
+  transition: all 0.3s;
 }
 
-.submit-button:disabled {
-  background-color: #888;
-  cursor: not-allowed;
+.btn-primary:hover {
+  background: #3a1e66;
 }
 
-.form-footer {
-  text-align: center;
-  font-size: 14px;
-  margin-top: 15px;
-}
-
-.form-footer a {
+.text-decoration-none {
   color: #5B3199;
-  text-decoration: none;
 }
 
-.form-footer a:hover {
+.text-decoration-none:hover {
   text-decoration: underline;
 }
 </style>
