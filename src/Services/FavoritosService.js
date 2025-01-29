@@ -24,6 +24,11 @@ class FavoritosService {
       throw new Error("Erro ao buscar favoritos.");
     }
   }
+  
+  atualizarFavoritos(favoritosValidos) {
+    localStorage.setItem(this.favoritosKey, JSON.stringify(favoritosValidos));
+  }
+  
 
   // Adiciona um anúncio aos favoritos do usuário logado
   async adicionarFavorito(anuncio) {

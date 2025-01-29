@@ -60,16 +60,29 @@ export default {
   },
   methods: {
     async carregarFavoritos() {
-      try {
-        const favoritos = await FavoritosService.getFavoritos();
-        this.carros = favoritos.map(carro => ({
-          ...carro,
-          favorito: true, // Garante que a estrela estará acesa para veículos favoritos
-        }));
-      } catch (error) {
-        console.error("Erro ao carregar favoritos:", error);
-      }
-    },
+  try {
+    // Obtém a lista de favoritos salvos no banco de dados
+    let favoritos = await FavoritosService.getFavoritos();
+
+    // Obtém todos os anúncios ativos
+    const anunciosAtivos = await this.daoService.getAll();
+
+    // Filtra os favoritos, removendo aqueles que foram excluídos ou vendidos
+    this.carros = favoritos.filter((favorito) =>
+      anunciosAtivos.some((anuncio) => anuncio.id === favorito.id && !anuncio.vendido)
+    ).map(carro => ({
+      ...carro,
+      favorito: true, // Mantém a estrela acesa para veículos válidos
+    }));
+
+    // Atualiza o FavoritosService para manter apenas os válidos
+    FavoritosService.atualizarFavoritos(this.carros);
+
+  } catch (error) {
+    console.error("Erro ao carregar favoritos:", error);
+  }
+}
+,
 
     async toggleFavorito(anuncio) {
       if (!FavoritosService.getUsuarioLogado()) {
