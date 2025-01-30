@@ -44,7 +44,7 @@
         </div>
         <div class="form-group">
           <label>Quilometragem (km)</label>
-          <input type="text" v-model="anuncio.km" placeholder="Digite a quilometragem" @input="validateNumberInput('km')"/>
+          <input type="text" v-model="anuncio.km" placeholder="Digite a quilometragem"  @input="formatarKm" />
         </div>
         <div class="form-group">
           <label>Cor</label>
@@ -89,7 +89,8 @@
         </div>
         <div class="form-group">
           <label>Valor</label>
-          <input type="text" v-model="anuncio.valor" placeholder="Digite o valor do veículo" class="input-valor" @input="validateNumberInput('valor')"/>
+          <input type="text" v-model="anuncio.valor" placeholder="Digite o valor do veículo"
+          class="input-valor" @input="formatarValor" />
         </div>
       </div>
       <div class="actions">
@@ -231,6 +232,35 @@ export default {
   validateNumberInput(field) {
     this.anuncio[field] = this.anuncio[field].replace(/\D/g, '');
   },
+
+  formatarValor() {
+  if (this.anuncio.valor) {
+    let numeroLimpo = this.anuncio.valor.replace(/\D/g, "");
+
+    if (!numeroLimpo) {
+      this.anuncio.valor = "";
+      return;
+    }
+
+    const valorFormatado = new Intl.NumberFormat("pt-BR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(parseFloat(numeroLimpo) / 100);
+
+    this.anuncio.valor = valorFormatado;
+  }
+},
+
+formatarKm() {
+  if (this.anuncio.km) {
+    const numeroLimpo = this.anuncio.km.replace(/\D/g, "");
+    const kmFormatado = new Intl.NumberFormat("pt-BR").format(
+      parseInt(numeroLimpo)
+    );
+    this.anuncio.km = kmFormatado;
+  }
+},
+
   validateAnoModelo() {
     if (this.anuncio.anoFabricacao && this.anuncio.anoModelo) {
       const anoFabricacao = parseInt(this.anuncio.anoFabricacao);
