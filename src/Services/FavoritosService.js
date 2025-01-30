@@ -66,6 +66,24 @@ class FavoritosService {
     }
   }
 
+  async removerTodosFavoritosDoUsuario(userId) {
+    try {
+      const favoritosRef = collection(db, "favoritos");
+      const q = query(favoritosRef, where("userId", "==", userId));
+      const querySnapshot = await getDocs(q);
+
+      querySnapshot.forEach(async (docSnap) => {
+        await deleteDoc(doc(db, "favoritos", docSnap.id));
+      });
+
+      console.log("Favoritos removidos com sucesso.");
+    } catch (error) {
+      console.error("Erro ao remover favoritos do usuário:", error);
+      throw error;
+    }
+  }
+
+
   // Verifica se um anúncio está nos favoritos do usuário logado
   async isFavorito(id) {
     const user = this.getUsuarioLogado();

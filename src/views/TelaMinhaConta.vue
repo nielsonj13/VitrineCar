@@ -73,10 +73,12 @@
 
 <script>
 import Navbar from "../components/NavBar.vue";
-import { getAuth, updateProfile, deleteUser} from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { getAuth, updateProfile, deleteUser, reauthenticateWithCredential, EmailAuthProvider} from "firebase/auth";
+import { doc, getDoc, setDoc, deleteDoc} from "firebase/firestore";
 import { db } from "../firebase";
 import axios from "axios"; 
+import DAOService from "@/Services/DAOService";
+import FavoritosService from "@/Services/FavoritosService";
 
 export default {
   name: "MinhaConta",
@@ -264,23 +266,59 @@ export default {
     },
 
     async excluirConta() {
-      if (confirm("Tem certeza de que deseja excluir sua conta? Esta ação não pode ser desfeita.")) {
-        try {
-          const auth = getAuth();
-          const user = auth.currentUser;
-          if (user) {
-            await deleteUser(user);
-            alert("Conta excluída com sucesso.");
-            this.$router.push("/login");
-          } else {
-            alert("Nenhum usuário autenticado.");
-          }
-        } catch (error) {
-          console.error("Erro ao excluir conta:", error);
-          alert("Erro ao excluir conta. Faça login novamente para confirmar a ação.");
-        }
+  if (confirm("Tem certeza de que deseja excluir sua conta? Esta ação não pode ser desfeita.")) {
+    try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+
+      if (!user) {
+        alert("Nenhum usuário autenticado.");
+        return;
       }
+
+      // Reautenticar o usuário antes de excluir
+      const senha = prompt("Para segurança, insira sua senha:");
+
+      if (!senha) {
+        alert("A senha é necessária para confirmar a exclusão.");
+        return;
+      }
+
+      const credential = EmailAuthProvider.credential(user.email, senha);
+      await reauthenticateWithCredential(user, credential);
+
+      const userId = user.uid;
+
+      // 🔹 1. Exclui os anúncios do usuário
+      const anunciosService = new DAOService("anuncios");
+      const anunciosUsuario = await anunciosService.getAll();
+      const anunciosParaExcluir = anunciosUsuario.filter(anuncio => anuncio.userId === userId);
+
+      for (const anuncio of anunciosParaExcluir) {
+        await anunciosService.delete(anuncio.id);
+      }
+
+      // 🔹 2. Exclui os favoritos do usuário
+      await FavoritosService.removerTodosFavoritosDoUsuario(userId);
+
+      // 🔹 3. Exclui os dados do usuário no Firestore
+      const userRef = doc(db, "usuarios", userId);
+      await deleteDoc(userRef);
+
+      // 🔹 4. Exclui o usuário do Firebase Authentication
+      await deleteUser(user);
+
+      alert("Conta excluída com sucesso.");
+      this.$router.push("/");
+
+    } catch (error) {
+      console.error("Erro ao excluir conta:", error);
+      alert("Erro ao excluir conta. Verifique se a senha está correta e tente novamente.");
     }
+  }
+}
+
+
   },
 };
 </script>
