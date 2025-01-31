@@ -2,17 +2,47 @@
   <div>
     <Navbar />
     <div class="container" v-if="veiculo">
-      <div class="image-gallery">
-        <img 
-          v-for="(imagem, index) in veiculo.imagens" 
-          :key="index" 
-          :src="imagem" 
-          alt="Imagem do veículo" 
-          class="img-fluid" 
-          @error="imagemErro(index)"
-        />
+      
+      <!-- Carrossel de Imagens -->
+      <div class="carrossel-container">
+        <!-- Botão Anterior -->
+        <button class="nav-button left" @click="anteriorImagem">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+
+        <!-- Imagem Principal -->
+        <div class="imagem-principal">
+          <img :src="veiculo.imagens?.[imagemSelecionada] || ''" class="main-image" 
+               alt="Imagem do veículo" @click="abrirTelaCheia">
+        </div>
+
+        <!-- Botão Próximo -->
+        <button class="nav-button right" @click="proximaImagem">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+
+        <!-- Miniaturas -->
+        <div class="miniaturas">
+          <img 
+            v-for="(imagem, index) in veiculo.imagens" 
+            :key="'thumb-' + index"
+            :src="imagem" 
+            class="miniatura img-thumbnail" 
+            @click="selecionarImagem(index)" 
+            :class="{ active: index === imagemSelecionada }"
+            alt="Miniatura do veículo">
+        </div>
       </div>
 
+      <!-- Modal de Tela Cheia -->
+      <div v-if="telaCheiaAtiva" class="modal-fullscreen" @click="fecharTelaCheia">
+        <button class="close-button" @click.stop="fecharTelaCheia">X</button>
+        <button class="modal-prev" @click.stop="anteriorImagem">&#10094;</button>
+        <img :src="veiculo.imagens?.[imagemSelecionada] || ''" class="fullscreen-image" />
+        <button class="modal-next" @click.stop="proximaImagem">&#10095;</button>
+      </div>
+
+      <!-- Informações do Veículo -->
       <div class="vehicle-info">
         <div class="price-title">
           <div>
@@ -28,9 +58,8 @@
           </div>
         </div>
 
-
         <div class="info-wrapper">
-          <!-- Informações do veículo -->
+          <!-- Informações do Veículo -->
           <div class="info-section">
             <h4>Informações do Veículo</h4>
             <div class="info-grid">
@@ -46,7 +75,7 @@
 
           <!-- Informações do Vendedor -->
           <div class="info-section seller-details" v-if="vendedor">
-            <h4>Informações do Vendedor</h4>
+            <h4>Informações do Vendedor</h4> 
             <p class="seller-name"><i class="bi bi-person-circle"></i> <strong>Nome:</strong> {{ vendedor.nome }} {{ vendedor.sobrenome }}</p>
             <p><i class="bi bi-envelope"></i> <strong>Email:</strong> {{ vendedor.email }}</p>
             <p><i class="bi bi-telephone"></i> <strong>Telefone:</strong> {{ vendedor.telefone }}</p>
@@ -55,11 +84,13 @@
         </div>
       </div>
     </div>
+
     <div v-else>
       <p class="loading">Carregando veículo...</p>
     </div>
   </div>
 </template>
+
 
 <script>
 import { doc, getDoc } from "firebase/firestore";
@@ -78,14 +109,61 @@ export default {
       veiculo: null,
       vendedor: null,
       daoService: new DAOService('anuncios'),
+      imagemSelecionada: 0,
+      telaCheiaAtiva: false,
     };
   },
   async created() {
     await this.carregarVeiculo();
   },
+  // Adicionamos e removemos o evento global de teclado no ciclo de vida do componente
+mounted() {
+  document.addEventListener("keydown", this.tecladoNavegacao);
+},
+
+beforeUnmount() {
+  document.removeEventListener("keydown", this.tecladoNavegacao);
+},
   methods: {
-    imagemErro(index) {
-      this.veiculo.imagens[index] = "https://via.placeholder.com/300?text=Imagem+Não+Disponível";
+    selecionarImagem(index) {
+      this.imagemSelecionada = index;
+    },
+    proximaImagem() {
+      if (this.imagemSelecionada < this.veiculo.imagens.length - 1) {
+        this.imagemSelecionada++;
+      } else {
+        this.imagemSelecionada = 0; // Volta para a primeira imagem
+      }
+    },
+    anteriorImagem() {
+      if (this.imagemSelecionada > 0) {
+        this.imagemSelecionada--;
+      } else {
+        this.imagemSelecionada = this.veiculo.imagens.length - 1; // Volta para a última imagem
+      }
+    },
+    abrirTelaCheia() {
+      this.telaCheiaAtiva = true;
+      document.addEventListener("keydown", this.fecharComEsc);
+    },
+    fecharTelaCheia() {
+      this.telaCheiaAtiva = false;
+      document.removeEventListener("keydown", this.fecharComEsc);
+    },
+    fecharComEsc(event) {
+      if (event.key === "Escape") {
+        this.fecharTelaCheia();
+      }
+    },
+    // Função para capturar eventos de teclado
+    tecladoNavegacao(event) {
+      if (event.key === "ArrowRight") {
+        this.proximaImagem();
+      } else if (event.key === "ArrowLeft") {
+        this.anteriorImagem();
+      } else if (event.key === "Escape") {
+        this.fecharTelaCheia();
+      }
     },
     async carregarVeiculo() {
       try {
@@ -165,24 +243,133 @@ export default {
 </script>
 
 <style scoped>
+/* ✅ Container principal */
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
 }
-
-.image-gallery {
+.modal-fullscreen {
+  position: fixed;  /* Fixar na tela inteira */
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.9); /* Fundo escuro */
   display: flex;
-  gap: 50px;
+  align-items: center;
   justify-content: center;
+  z-index: 9999; /* Garantir que fique acima de tudo */
+}
+
+.fullscreen-image {
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain; /* Para ajustar sem cortar */
+}
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 30px;
+  background: none;
+  font-size: 30px;
+  color: #5b3199;
+  padding: 10px 15px;
+  border: none;
+  cursor: pointer;
+  z-index: 10000; /* Certificar-se que está acima do modal */
+}
+
+.modal-prev, .modal-next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 50px;
+  padding: 10px;
+  color: #5b3199;
+  cursor: pointer;
+  z-index: 10000;
+}
+
+.modal-prev { left: 20px; }
+.modal-next { right: 20px; }
+
+
+/* ✅ Carrossel de imagens */
+.carrossel-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  position: relative;
+}
+
+/* ✅ Imagem principal no carrossel */
+.imagem-principal img {
+  width: 600px;
+  height: 400px;
+  border-radius: 10px;
+  object-fit: cover;
+  transition: transform 0.3s ease-in-out;
+  cursor: pointer;
   margin-bottom: 10px;
 }
 
-.img-fluid {
-  max-width: 300px;
-  border-radius: 15px;
+/* 🖱️ Efeito ao passar o mouse na imagem principal */
+.imagem-principal img:hover {
+  transform: scale(1.03);
 }
 
+/* ✅ Botões de navegação no carrossel */
+.nav-button {
+ 
+  border: none;
+  color: white;
+  font-size: 30px;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 50%;
+  position: absolute;
+  z-index: 10;
+}
+
+
+
+/* 📌 Ajuste das setas de navegação */
+.left {
+  left: -40px;
+}
+
+.right {
+  right: -40px;
+}
+
+/* ✅ Miniaturas ao lado do carrossel */
+.miniaturas {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 📌 Estilização das miniaturas */
+.miniatura {
+  width: 100px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: transform 0.3s, border 0.3s;
+}
+
+/* 🖱️ Efeito ao passar o mouse e destacar miniatura selecionada */
+.miniatura:hover, .miniatura.active {
+  transform: scale(1.1);
+  border: 2px solid #531B76;
+}
+
+/* ✅ Informações do veículo */
 .vehicle-info {
   display: flex;
   flex-direction: column;
@@ -193,11 +380,13 @@ export default {
   gap: 10px;
 }
 
+/* 🔷 Layout flexível para informações */
 .info-wrapper {
   display: flex;
   gap: 40px;
 }
 
+/* 🔷 Caixa de informações */
 .info-section {
   flex: 1;
   padding: 20px;
@@ -205,6 +394,7 @@ export default {
   border-radius: 10px;
 }
 
+/* ✅ Título do veículo e preço */
 .price-title {
   display: flex;
   justify-content: space-between;
@@ -219,18 +409,21 @@ export default {
   font-weight: bold;
   color: #5b3199;
 }
+
 .price-container {
   display: flex;
   align-items: center;
-  gap: 10px; /* Espaço entre o preço e o ícone de favorito */
+  gap: 10px;
 }
 
+/* 💰 Estilo do preço */
 .vehicle-price {
-  font-size: 40px; /* Reduza para uma aparência mais equilibrada */
+  font-size: 40px;
   font-weight: bold;
   color: #5b3199;
 }
 
+/* ⭐ Ícone de favorito */
 .favorite-icon {
   cursor: pointer;
   font-size: 35px;
@@ -251,27 +444,83 @@ export default {
   color: #7c42c2;
 }
 
+/* 🔷 Informações gerais */
 .info-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
 }
 
-.loading {
-  text-align: center;
-  font-size: 24px;
-  color: #5b3199;
-  margin-top: 50px;
-}
-
+/* 🔷 Nome do vendedor */
 .seller-name {
-  font-size: 30px; /* Ajuste conforme necessário */
+  font-size: 30px;
   font-weight: bold;
   color: #5b3199;
 }
 
-
+/* 🔷 Ícones */
 i {
-  color: #5b3199; /* Altere para a cor desejada */
+  color: #5b3199;
+}
+
+/* ✅ RESPONSIVIDADE PARA MOBILE */
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+  }
+
+  .nav-button {
+    display: none !important; /* Esconde as setas em telas menores */
+  }
+  .carrossel-container {
+    flex-direction: column;
+  }
+
+  .imagem-principal img {
+    width: 100%;
+    height: auto;
+  }
+
+  .miniaturas {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .miniatura {
+    width: 80px;
+    height: 60px;
+  }
+
+  .price-title {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .vehicle-title {
+    font-size: 28px;
+  }
+
+  .vehicle-price {
+    font-size: 30px;
+  }
+
+  .favorite-icon {
+    font-size: 30px;
+  }
+
+  .info-wrapper {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .seller-name {
+    font-size: 24px;
+  }
 }
 </style>
+
