@@ -6,6 +6,37 @@
         <h2>Resultados da sua Busca</h2>
         <p v-if="termo">Exibindo resultados para: <strong>{{ termo }}</strong></p>
 
+         <!-- Painel de Filtros -->
+        <div class="filter-container">
+          <select v-model="filtros.estado" class="filtro-select">
+            <option value="">Selecione o Estado</option>
+            <option v-for="estado in estados" :key="estado" :value="estado">
+              {{ estado }}
+            </option>
+          </select>
+
+          <!-- Filtro de Cidade (Dinamicamente carregado com base no Estado selecionado) -->
+          <select v-model="filtros.cidade" class="filtro-select" :disabled="!filtros.estado">
+            <option value="">Selecione a Cidade</option>
+            <option v-for="cidade in cidades" :key="cidade">
+              {{ cidade }}
+            </option>
+          </select>
+          
+          <select v-model="filtros.km" class="filtro-select">
+            <option value="">Selecione a Quilometragem</option>
+            <option value="10000">Até 10.000 km</option>
+            <option value="25000">Até 25.000 km</option>
+            <option value="50000">Até 50.000 km</option>
+            <option value="100000">Até 100.000 km</option>
+            <option value="150000">Até 150.000 km</option>
+            <option value="200000">Acima de 150.000 km</option>
+          </select>
+          <input type="text" v-model="filtros.valor" @input="formatarValor" placeholder="Valor Máximo">
+          <input v-model="filtros.ano" placeholder="Ano Mínimo">
+          <button class="btn-filtrar" @click="aplicarFiltros">Filtrar</button>
+        </div>
+
         <div class="anuncios-container">
           <div v-for="anuncio in anuncios" :key="anuncio.id" class="card">
             <img 
@@ -43,6 +74,9 @@
 import Navbar from "../components/NavBar.vue";
 import DAOService from "@/Services/DAOService";
 import FavoritosService from "@/Services/FavoritosService";
+import axios from "axios";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/firebase";
 
 export default {
   name: "TelaResultados",
@@ -54,46 +88,228 @@ export default {
       anuncios: [],
       termo: "",
       daoService: null,
+      anunciosFiltrados: [],
+      filtros: {
+        cidade: "",
+        estado: "",
+        km: "",
+        valor: "",
+        ano: "",
+      },
+      estados: [],
+      cidades: [],
     };
   },
   async created() {
     this.termo = this.$route.query.termo || "";
     this.daoService = new DAOService("anuncios");
     await this.carregarResultados();
+    await this.carregarEstados();
+  },
+  watch: {
+    // Carregar cidades automaticamente quando um estado for selecionado
+    "filtros.estado"(novoEstado) {
+      if (novoEstado) {
+        this.carregarCidades(novoEstado);
+      } else {
+        this.cidades = [];
+      }
+    }
   },
   methods: {
     async carregarResultados() {
+  try {
+    const query = this.$route.query;
+    this.termo = query.termo || "";
+    this.filtros = {
+      cidade: query.cidade || "",
+      estado: query.estado || "",
+      km: query.km || "",
+      valor: query.valor || "",
+      ano: query.ano || "",
+    };
+
+    const termoNormalizado = this.termo.trim().toLowerCase();
+    
+    // Buscar por marca, categoria e modelos que contenham parte do termo
+    const resultadosMarca = await this.daoService.searchByField("marca", termoNormalizado);
+    const resultadosCategoria = await this.daoService.searchByField("categoria", termoNormalizado);
+    const todosAnuncios = await this.daoService.getAll();
+
+    const resultadosModelo = todosAnuncios.filter((anuncio) => {
+      const palavrasModelo = anuncio.modelo.toLowerCase().split(" ");
+      return palavrasModelo.some((palavra) => palavra.includes(termoNormalizado));
+    });
+
+    // Remover duplicatas dos resultados
+    let todosResultados = [...resultadosMarca, ...resultadosCategoria, ...resultadosModelo];
+    todosResultados = todosResultados.filter(
+      (item, index, self) => self.findIndex((v) => v.id === item.id) === index
+    );
+
+    // Obter os usuários donos dos anúncios para buscar cidade e estado
+    for (let anuncio of todosResultados) {
+      if (anuncio.userId) {
+        const userRef = doc(db, "usuarios", anuncio.userId);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          anuncio.cidade = userData.endereco?.cidade || "";
+          anuncio.estado = userData.endereco?.estado || "";
+        }
+      }
+    }
+
+    // Aplicar filtros avançados
+    this.anuncios = todosResultados.filter((anuncio) => {
+      return (
+        (!this.filtros.cidade || anuncio.cidade.toLowerCase().includes(this.filtros.cidade.toLowerCase())) &&
+        (!this.filtros.estado || anuncio.estado.toLowerCase().includes(this.filtros.estado.toLowerCase())) &&
+        (!this.filtros.km || Number(anuncio.km) <= Number(this.filtros.km)) &&
+        (!this.filtros.valor || Number(anuncio.valor) <= Number(this.filtros.valor)) &&
+        (!this.filtros.ano || Number(anuncio.anoModelo) >= Number(this.filtros.ano))
+      );
+    });
+
+    // Atualizar favoritos para o usuário logado
+    const favoritos = await FavoritosService.getFavoritos();
+    this.anuncios = this.anuncios.map((anuncio) => ({
+      ...anuncio,
+      favorito: favoritos.some((fav) => fav.id === anuncio.id),
+    }));
+
+    this.anunciosFiltrados = this.anuncios;
+  } catch (error) {
+    console.error("Erro ao buscar veículos:", error);
+    alert("Erro ao buscar os veículos. Tente novamente.");
+  }
+},
+
+    async carregarEstados() {
+      try {
+        const response = await axios.get("https://servicodados.ibge.gov.br/api/v1/localidades/estados");
+        this.estados = response.data.map((estado) => estado.sigla).sort();
+      } catch (error) {
+        console.error("Erro ao carregar estados:", error);
+      }
+    },
+
+    async carregarCidades(estadoSigla) {
+      try {
+        const response = await axios.get(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${estadoSigla}/municipios`);
+        this.cidades = response.data.map((cidade) => cidade.nome).sort();
+      } catch (error) {
+        console.error("Erro ao carregar cidades:", error);
+      }
+    },
+
+    async aplicarFiltros() {
       try {
         const termoNormalizado = this.termo.trim().toLowerCase();
+        let anunciosFiltrados = await this.daoService.getAll();
 
-        // Buscar por marca, categoria e todos os modelos
+        // Filtra por Marca, Categoria e Modelos
         const resultadosMarca = await this.daoService.searchByField("marca", termoNormalizado);
         const resultadosCategoria = await this.daoService.searchByField("categoria", termoNormalizado);
-        const todosAnuncios = await this.daoService.getAll(); // Buscar todos os anúncios
-
-        // Filtrar modelos que contenham pelo menos uma parte do termo buscado
-        const resultadosModelo = todosAnuncios.filter((anuncio) => {
-          const palavrasModelo = anuncio.modelo.toLowerCase().split(" "); // Divide o modelo em palavras
-          return palavrasModelo.some(palavra => palavra.includes(termoNormalizado)); // Verifica se o termo está em alguma palavra
+        const resultadosModelo = anunciosFiltrados.filter((anuncio) => {
+          const palavrasModelo = anuncio.modelo.toLowerCase().split(" ");
+          return palavrasModelo.some((palavra) => palavra.includes(termoNormalizado));
         });
 
         // Unir todos os resultados e remover duplicatas
-        const todosResultados = [...resultadosMarca, ...resultadosCategoria, ...resultadosModelo];
-        this.anuncios = todosResultados.filter(
+        anunciosFiltrados = [...resultadosMarca, ...resultadosCategoria, ...resultadosModelo];
+        anunciosFiltrados = anunciosFiltrados.filter(
           (item, index, self) => self.findIndex((v) => v.id === item.id) === index
         );
 
-        // Verificar quais anúncios são favoritos para o usuário logado
-        const favoritos = await FavoritosService.getFavoritos();
-        this.anuncios = this.anuncios.map((anuncio) => ({
-          ...anuncio,
-          favorito: favoritos.some((fav) => fav.id === anuncio.id),
-        }));
+        // **Filtrar por Quilometragem**
+        if (this.filtros.km) {
+          if (this.filtros.km == "200000") {
+            anunciosFiltrados = anunciosFiltrados.filter(anuncio => 
+              this.limparNumero(anuncio.km) > 150000
+            );
+          } else {
+            anunciosFiltrados = anunciosFiltrados.filter(anuncio => 
+              this.limparNumero(anuncio.km) <= this.filtros.km
+            );
+          }
+        }
+
+        // **Filtrar por Valor**
+        if (this.filtros.valor) {
+          const valorFiltrado = this.limparNumero(this.filtros.valor);
+          anunciosFiltrados = anunciosFiltrados.filter(anuncio => 
+            this.limparNumero(anuncio.valor) <= valorFiltrado
+          );
+        }
+
+        // Adicionar cidade e estado a cada anúncio
+        for (let anuncio of anunciosFiltrados) {
+          if (anuncio.userId) {
+            const userRef = doc(db, "usuarios", anuncio.userId);
+            const userSnap = await getDoc(userRef);
+            if (userSnap.exists()) {
+              const userData = userSnap.data();
+              anuncio.cidade = userData.endereco?.cidade || "";
+              anuncio.estado = userData.endereco?.estado || "";
+            }
+          }
+        }
+
+         // **Aplicar filtro de ano**
+        if (this.filtros.ano) {
+          const anoFiltro = parseInt(this.filtros.ano, 10);
+          anunciosFiltrados = anunciosFiltrados.filter(anuncio => 
+            parseInt(anuncio.anoModelo, 10) >= anoFiltro
+          );
+        }
+
+        // Aplicar filtro de estado
+        if (this.filtros.estado) {
+          anunciosFiltrados = anunciosFiltrados.filter(anuncio => anuncio.estado === this.filtros.estado);
+        }
+
+        // Aplicar filtro de cidade
+        if (this.filtros.cidade) {
+          anunciosFiltrados = anunciosFiltrados.filter(anuncio => anuncio.cidade === this.filtros.cidade);
+        }
+        
+        // Atualiza os resultados da busca
+        this.anuncios = anunciosFiltrados;
+
       } catch (error) {
-        console.error("Erro ao buscar veículos:", error);
+        console.error("Erro ao filtrar veículos:", error);
         alert("Erro ao buscar os veículos. Tente novamente.");
       }
     },
+
+    formatarValor() {
+      if (this.filtros.valor) {
+        // Remove caracteres que não sejam números
+        let numeroLimpo = this.filtros.valor.replace(/\D/g, "");
+
+        // Impede valores vazios ou apenas zeros
+        if (!numeroLimpo || parseInt(numeroLimpo) === 0) {
+          this.filtros.valor = "";
+          return;
+        }
+
+        // Converte para número correto (dividindo por 100 para casas decimais)
+        const valorFormatado = new Intl.NumberFormat("pt-BR", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }).format(parseFloat(numeroLimpo) / 100);
+
+        // Atualiza o campo com o valor formatado
+        this.filtros.valor = valorFormatado;
+      }
+    },
+
+    // **Função para remover pontos e vírgulas e converter para número**
+    limparNumero(valor) {
+      return parseInt(valor.replace(/[.,]/g, ""), 10) || 0;
+    },
+    
     async toggleFavorito(anuncio) {
       if (!FavoritosService.getUsuarioLogado()) {
         alert("Você precisa estar logado para favoritar um anúncio.");
@@ -118,6 +334,7 @@ export default {
         alert("Erro ao atualizar o favorito.");
       }
     },
+
     verAnuncio(id) {
       this.$router.push(`/veiculo/${id}`);
     }
@@ -235,4 +452,86 @@ h2 {
 .favorite-icon:hover {
   transform: scale(1.2);
 }
+
+.filter-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+  align-items: center;
+  background: transparent; /* Remove fundo para combinar com o design */
+  padding: 10px;
+  margin-bottom: 20px;
+}
+
+.filtro-select,
+input {
+  padding: 12px;
+  font-size: 16px;
+  border: 2px solid #5b3199; /* Cor da borda roxa */
+  border-radius: 30px; /* Arredondamento dos botões */
+  background: transparent; /* Fundo transparente */
+  width: 260px;
+  text-align: center; /* Centraliza o texto dentro do select */
+  font-weight: bold;
+  color: #5b3199; /* Cor do texto roxa */
+  transition: all 0.3s ease-in-out;
+  cursor: pointer;
+}
+
+/* Remove estilos padrão do select */
+.filtro-select:focus,
+input:focus {
+  outline: none;
+  border-color: #7c42c2; /* Cor mais clara ao focar */
+}
+
+/* Ajuste para a seta dos selects */
+.filtro-select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Cpath fill='%235b3199' d='M2 0L0 2h4zM2 5l2-2H0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+  background-size: 10px;
+}
+
+.filtro-select::placeholder,
+input::placeholder {
+  color: #5b3199; /* Cor roxa */
+  opacity: 1; /* Garante que a cor seja visível */
+}
+
+/* Botão Filtrar */
+.btn-filtrar {
+  background: #5b3199;
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  font-size: 16px;
+  border-radius: 30px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s ease-in-out;
+}
+
+.btn-filtrar:hover {
+  background: #7c42c2;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .filter-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .filtro-select,
+  input {
+    width: 100%;
+  }
+}
+
+
 </style>
