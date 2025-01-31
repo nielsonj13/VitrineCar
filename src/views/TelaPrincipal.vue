@@ -3,6 +3,7 @@
     <Navbar />
 
     <!-- Área de Busca -->
+    <!-- Área de Busca -->
     <div class="search-container">
       <h2>Procure seu Veículo!</h2>
       <div class="search-bar input-group">
@@ -193,13 +194,25 @@ body {
 /* Responsividade */
 @media (max-width: 768px) {
   .search-container {
-    width: 90%;
+    width: 95%;
+    padding: 20px;
+  }
+  .search-container h2 {
+    font-size: 32px;
+  }
+  .search-bar {
+    flex-direction: column;
   }
   .search-bar input {
-    width: 70%;
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 15px;
+    font-size: 18px;
   }
   .search-bar button {
-    width: 30%;
+    width: 100%;
+    padding: 15px;
+    font-size: 18px;
   }
 }
 </style>

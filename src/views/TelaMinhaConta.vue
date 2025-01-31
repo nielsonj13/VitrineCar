@@ -413,4 +413,15 @@ h3 {
   background-color: #c82333;
 }
 
+@media (max-width: 768px) {
+  .forms-container {
+    flex-direction: column;
+  }
+  .form-section {
+    width: 100%;
+  }
+  .save-button {
+    font-size: 14px;
+  }
+}
 </style>

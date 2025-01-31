@@ -451,4 +451,15 @@ button {
   background-color: #28a745;
   color: white;
 }
+
+/* Responsividade */
+@media (max-width: 600px) {
+  .container {
+    width: 90%;
+  }
+
+  .form {
+    grid-template-columns: 1fr;
+  }
+}
 </style>
