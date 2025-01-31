@@ -37,6 +37,12 @@
           <button class="btn-filtrar" @click="aplicarFiltros">Filtrar</button>
         </div>
 
+        <div class="search-container">
+          <input type="text"  v-model="termo"  placeholder="Buscar por marca, modelo ou categoria..."  class="search-input" @keyup.enter="pesquisarVeiculos"/>
+          <button class="btn-pesquisa" @click="pesquisarVeiculos">Buscar</button>
+        </div>
+
+
         <div class="anuncios-container">
           <div v-for="anuncio in anuncios" :key="anuncio.id" class="card">
             <img 
@@ -117,73 +123,90 @@ export default {
     }
   },
   methods: {
-    async carregarResultados() {
-  try {
-    const query = this.$route.query;
-    this.termo = query.termo || "";
-    this.filtros = {
-      cidade: query.cidade || "",
-      estado: query.estado || "",
-      km: query.km || "",
-      valor: query.valor || "",
-      ano: query.ano || "",
-    };
 
-    const termoNormalizado = this.termo.trim().toLowerCase();
-    
-    // Buscar por marca, categoria e modelos que contenham parte do termo
-    const resultadosMarca = await this.daoService.searchByField("marca", termoNormalizado);
-    const resultadosCategoria = await this.daoService.searchByField("categoria", termoNormalizado);
-    const todosAnuncios = await this.daoService.getAll();
-
-    const resultadosModelo = todosAnuncios.filter((anuncio) => {
-      const palavrasModelo = anuncio.modelo.toLowerCase().split(" ");
-      return palavrasModelo.some((palavra) => palavra.includes(termoNormalizado));
-    });
-
-    // Remover duplicatas dos resultados
-    let todosResultados = [...resultadosMarca, ...resultadosCategoria, ...resultadosModelo];
-    todosResultados = todosResultados.filter(
-      (item, index, self) => self.findIndex((v) => v.id === item.id) === index
-    );
-
-    // Obter os usuários donos dos anúncios para buscar cidade e estado
-    for (let anuncio of todosResultados) {
-      if (anuncio.userId) {
-        const userRef = doc(db, "usuarios", anuncio.userId);
-        const userSnap = await getDoc(userRef);
-        if (userSnap.exists()) {
-          const userData = userSnap.data();
-          anuncio.cidade = userData.endereco?.cidade || "";
-          anuncio.estado = userData.endereco?.estado || "";
-        }
+    async pesquisarVeiculos() {
+      if (!this.termo.trim()) {
+        alert("Digite algo para buscar!");
+        return;
       }
-    }
 
-    // Aplicar filtros avançados
-    this.anuncios = todosResultados.filter((anuncio) => {
-      return (
-        (!this.filtros.cidade || anuncio.cidade.toLowerCase().includes(this.filtros.cidade.toLowerCase())) &&
-        (!this.filtros.estado || anuncio.estado.toLowerCase().includes(this.filtros.estado.toLowerCase())) &&
-        (!this.filtros.km || Number(anuncio.km) <= Number(this.filtros.km)) &&
-        (!this.filtros.valor || Number(anuncio.valor) <= Number(this.filtros.valor)) &&
-        (!this.filtros.ano || Number(anuncio.anoModelo) >= Number(this.filtros.ano))
-      );
-    });
+      // Redirecionar para a página de resultados com o termo de busca
+      this.$router.push({
+        name: "TelaResultados",
+        query: { termo: this.termo.trim().toLowerCase() }
+      }).then(() => {
+        // Forçar recarregamento da rota para atualizar os resultados
+        this.$router.go();
+      });
+    },
+      
+    async carregarResultados() {
+      try {
+        const query = this.$route.query;
+        this.termo = query.termo || "";
+        this.filtros = {
+          cidade: query.cidade || "",
+          estado: query.estado || "",
+          km: query.km || "",
+          valor: query.valor || "",
+          ano: query.ano || "",
+        };
 
-    // Atualizar favoritos para o usuário logado
-    const favoritos = await FavoritosService.getFavoritos();
-    this.anuncios = this.anuncios.map((anuncio) => ({
-      ...anuncio,
-      favorito: favoritos.some((fav) => fav.id === anuncio.id),
-    }));
+        const termoNormalizado = this.termo.trim().toLowerCase();
+        
+        // Buscar por marca, categoria e modelos que contenham parte do termo
+        const resultadosMarca = await this.daoService.searchByField("marca", termoNormalizado);
+        const resultadosCategoria = await this.daoService.searchByField("categoria", termoNormalizado);
+        const todosAnuncios = await this.daoService.getAll();
 
-    this.anunciosFiltrados = this.anuncios;
-  } catch (error) {
-    console.error("Erro ao buscar veículos:", error);
-    alert("Erro ao buscar os veículos. Tente novamente.");
-  }
-},
+        const resultadosModelo = todosAnuncios.filter((anuncio) => {
+          const palavrasModelo = anuncio.modelo.toLowerCase().split(" ");
+          return palavrasModelo.some((palavra) => palavra.includes(termoNormalizado));
+        });
+
+        // Remover duplicatas dos resultados
+        let todosResultados = [...resultadosMarca, ...resultadosCategoria, ...resultadosModelo];
+        todosResultados = todosResultados.filter(
+          (item, index, self) => self.findIndex((v) => v.id === item.id) === index
+        );
+
+        // Obter os usuários donos dos anúncios para buscar cidade e estado
+        for (let anuncio of todosResultados) {
+          if (anuncio.userId) {
+            const userRef = doc(db, "usuarios", anuncio.userId);
+            const userSnap = await getDoc(userRef);
+            if (userSnap.exists()) {
+              const userData = userSnap.data();
+              anuncio.cidade = userData.endereco?.cidade || "";
+              anuncio.estado = userData.endereco?.estado || "";
+            }
+          }
+        }
+
+        // Aplicar filtros avançados
+        this.anuncios = todosResultados.filter((anuncio) => {
+          return (
+            (!this.filtros.cidade || anuncio.cidade.toLowerCase().includes(this.filtros.cidade.toLowerCase())) &&
+            (!this.filtros.estado || anuncio.estado.toLowerCase().includes(this.filtros.estado.toLowerCase())) &&
+            (!this.filtros.km || Number(anuncio.km) <= Number(this.filtros.km)) &&
+            (!this.filtros.valor || Number(anuncio.valor) <= Number(this.filtros.valor)) &&
+            (!this.filtros.ano || Number(anuncio.anoModelo) >= Number(this.filtros.ano))
+          );
+        });
+
+        // Atualizar favoritos para o usuário logado
+        const favoritos = await FavoritosService.getFavoritos();
+        this.anuncios = this.anuncios.map((anuncio) => ({
+          ...anuncio,
+          favorito: favoritos.some((fav) => fav.id === anuncio.id),
+        }));
+
+        this.anunciosFiltrados = this.anuncios;
+      } catch (error) {
+        console.error("Erro ao buscar veículos:", error);
+        alert("Erro ao buscar os veículos. Tente novamente.");
+      }
+    },
 
     async carregarEstados() {
       try {
@@ -533,5 +556,41 @@ input::placeholder {
   }
 }
 
+.search-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.search-input {
+  width: 100%;
+  max-width: 400px;
+  padding: 10px 15px;
+  border: 2px solid #5b3199;
+  border-radius: 30px;
+  font-size: 16px;
+  color: #5b3199;
+}
+
+.search-input::placeholder {
+  color: #a080c3;
+}
+
+.btn-pesquisa {
+  background-color: #5b3199;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: 0.3s;
+}
+
+.btn-pesquisa:hover {
+  background-color: #7c42c2;
+}
 
 </style>
