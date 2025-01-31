@@ -11,6 +11,7 @@
           v-model="busca" 
           class="form-control" 
           placeholder="Digite marca ou modelo do veículo"
+          @keyup.enter="buscarOfertas(busca)"
         />
         <button @click="buscarOfertas(busca)" class="btn btn-primary">Ver Ofertas</button>
       </div>
@@ -78,11 +79,7 @@ export default {
   },
   methods: {
     buscarOfertas(termo) {
-      if (termo.trim()) {
         this.$router.push({ name: "TelaResultados", query: { termo: termo.trim().toLowerCase() } });
-      } else {
-        alert("Por favor, digite o nome ou modelo do veículo!");
-      }
     },
     filtrarCategoria(categoria) {
       this.$router.push({ name: "TelaResultados", query: { termo: categoria.trim() } });
