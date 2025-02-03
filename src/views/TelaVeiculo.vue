@@ -88,6 +88,7 @@
     <div v-else>
       <p class="loading">Carregando veículo...</p>
     </div>
+    <Footer />
   </div>
 </template>
 
@@ -96,6 +97,7 @@
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/firebase";
 import Navbar from '../components/NavBar.vue';
+import Footer from "@/components/Footer.vue";
 import DAOService from '@/Services/DAOService';
 import FavoritosService from '@/Services/FavoritosService';
 
@@ -103,6 +105,7 @@ export default {
   name: 'TelaVeiculo',
   components: {
     Navbar,
+    Footer
   },
   data() {
     return {

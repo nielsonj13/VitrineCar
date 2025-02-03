@@ -14,6 +14,7 @@ import TelaMeusAnuncios from '@/views/TelaMeusAnuncios.vue';
 import EditarAnuncio from '@/views/EditarAnuncio.vue';
 import TelaResultados from '@/views/TelaResultados.vue';
 import TelaAnuncios from '@/views/TelaAnuncios.vue';
+import Footer from '@/components/Footer.vue';
 
 // https://vitrinecar-71a27.web.app
 
@@ -59,6 +60,11 @@ const router = createRouter({
       path: '/navbar',
       name: 'Navbar',
       component: NavBar,
+    },
+    {
+      path: '/footer',
+      name: 'Footer',
+      component: Footer,
     },
     {
       path: '/veiculo/:id',
