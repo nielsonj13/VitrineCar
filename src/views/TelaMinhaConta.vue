@@ -69,10 +69,12 @@
       <button class="delete-button" @click="excluirConta">Excluir Conta</button>
     </div>
   </div>
+  <Footer />
 </template>
 
 <script>
 import Navbar from "../components/NavBar.vue";
+import Footer from "@/components/Footer.vue";
 import { getAuth, updateProfile, deleteUser, reauthenticateWithCredential, EmailAuthProvider} from "firebase/auth";
 import { doc, getDoc, setDoc, deleteDoc} from "firebase/firestore";
 import { db } from "../firebase";
@@ -84,6 +86,7 @@ export default {
   name: "MinhaConta",
   components: {
     Navbar,
+    Footer
   },
   data() {
     return {
