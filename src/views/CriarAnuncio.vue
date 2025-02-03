@@ -36,11 +36,11 @@
 
         <div class="form-group">
           <label>Ano do Modelo</label>
-          <input type="text" v-model="anuncio.anoModelo" placeholder="Digite o ano do modelo" @input="validateNumberInput('anoModelo')" @blur="validateAnoModelo" />
+          <input type="text" v-model="anuncio.anoModelo" placeholder="Digite o ano do modelo" @input="validateNumberInput('anoModelo'), validarAno('anoModelo')"  />
         </div>
         <div class="form-group">
           <label>Ano de Fabricação</label>
-          <input type="text" v-model="anuncio.anoFabricacao" placeholder="Digite o ano de fabricação" @input="validateNumberInput('anoFabricacao')" @blur="validateAnoModelo" />
+          <input type="text" v-model="anuncio.anoFabricacao" placeholder="Digite o ano de fabricação" @input="validateNumberInput('anoFabricacao'), validarAno('anoFabricacao')" />
         </div>
         <div class="form-group">
           <label>Quilometragem (km)</label>
@@ -234,7 +234,15 @@ export default {
     validateNumberInput(field) {
       this.anuncio[field] = this.anuncio[field].replace(/\D/g, "");
     },
+    validarAno(campo) {
+      // Remove qualquer caractere que não seja número
+      this.anuncio[campo] = this.anuncio[campo].replace(/\D/g, '');
 
+      // Limita a entrada para no máximo 4 dígitos
+      if (this.anuncio[campo].length > 4) {
+        this.anuncio[campo] = this.anuncio[campo].slice(0, 4);
+      }
+    },
     formatarValor() {
   if (this.anuncio.valor) {
     // Remove caracteres não numéricos
@@ -257,9 +265,6 @@ export default {
   }
 
     },
-
-    
-
     formatarKm() {
       if (this.anuncio.km) {
         const numeroLimpo = this.anuncio.km.replace(/\D/g, "");
@@ -267,19 +272,6 @@ export default {
           parseInt(numeroLimpo)
         );
         this.anuncio.km = kmFormatado;
-      }
-    },
-
-    validateAnoModelo() {
-      if (this.anuncio.anoFabricacao && this.anuncio.anoModelo) {
-        const anoFabricacao = parseInt(this.anuncio.anoFabricacao);
-        const anoModelo = parseInt(this.anuncio.anoModelo);
-        if (anoModelo < anoFabricacao || anoModelo > anoFabricacao + 1) {
-          alert(
-            "O ano do modelo deve ser igual ou no máximo 1 ano a mais que o ano de fabricação."
-          );
-          this.anuncio.anoModelo = "";
-        }
       }
     },
     avancarEtapa() {
@@ -299,12 +291,26 @@ export default {
     },
     async finalizarAnuncio() {
       try {
-        if (!this.anuncio.marca || !this.anuncio.modelo || !this.anuncio.valor) {
+        if (!this.anuncio.marca || !this.anuncio.modelo || !this.anuncio.valor || !this.anuncio.anoModelo || !this.anuncio.anoFabricacao) {
           alert("Por favor, preencha todos os campos obrigatórios.");
           return;
         }
         if (!this.anuncio.userId) {
           alert("Você precisa estar logado para criar um anúncio.");
+          return;
+        }
+        // Nova validação dos anos antes de finalizar o anúncio
+        const anoAtual = new Date().getFullYear();
+        const anoFabricacao = parseInt(this.anuncio.anoFabricacao);
+        const anoModelo = parseInt(this.anuncio.anoModelo);
+
+        if (isNaN(anoFabricacao) || anoFabricacao > anoAtual) {
+          alert("Ano de fabricação inválido, o ano de fabricação Não pode ser maior que o ano atual.");
+          return;
+        }
+
+        if (isNaN(anoModelo) || anoModelo < anoFabricacao || anoModelo > anoFabricacao + 1) {
+          alert("O ano do modelo deve ser igual ou no máximo 1 ano a mais que o ano de fabricação.");
           return;
         }
         this.anuncio.modelo = this.formatarModelo(this.anuncio.modelo);
