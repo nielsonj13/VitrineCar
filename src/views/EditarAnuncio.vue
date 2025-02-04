@@ -92,6 +92,10 @@
           <input type="text" v-model="anuncio.valor" placeholder="Digite o valor do veículo"
           class="input-valor" @input="formatarValor" />
         </div>
+        <div class="form-group">
+          <label>Descrição</label>
+          <textarea v-model="anuncio.descricao" placeholder="Edite a descrição do veículo..." rows="4"></textarea>
+        </div>
       </div>
       <div class="actions">
         <button class="btn-next" @click="avancarEtapa">Próximo</button>
@@ -465,7 +469,8 @@ h3 {
 }
 
 .form-group input,
-.form-group select {
+.form-group select,
+.form-group  textarea{
   padding: 12px;
   border-radius: 5px;
   border: 1px solid #ccc;

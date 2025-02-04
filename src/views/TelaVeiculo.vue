@@ -64,22 +64,33 @@
             <h4>Informações do Veículo</h4>
             <div class="info-grid">
               <p><i class="bi bi-calendar"></i> <strong>Ano:</strong> {{ veiculo.anoModelo }}/{{ veiculo.anoFabricacao }}</p>
-              <p><i class="bi bi-palette"></i> <strong>Cor:</strong> {{ veiculo.cor }}</p>
-              <p><i class="bi bi-speedometer2"></i> <strong>Km Rodado:</strong> {{ veiculo.km }}</p>
-              <p><i class="bi bi-gear"></i> <strong>Câmbio:</strong> {{ veiculo.cambio }}</p>
-              <p><i class="bi bi-fuel-pump"></i> <strong>Combustível:</strong> {{ veiculo.combustivel }}</p>
-              <p><i class="bi bi-car-front"></i><strong> Categoria:</strong> {{ veiculo.categoria }}</p>
+              <p><i class="bi bi-palette"></i> <strong>Cor:</strong> {{ veiculo.cor  || 'Não informado'}}</p>
+              <p><i class="bi bi-speedometer2"></i> <strong>Km Rodado:</strong> {{ veiculo.km  || 'Não informado'}}</p>
+              <p><i class="bi bi-gear"></i> <strong>Câmbio:</strong> {{ veiculo.cambio  || 'Não informado'}}</p>
+              <p><i class="bi bi-fuel-pump"></i> <strong>Combustível:</strong> {{ veiculo.combustivel  || 'Não informado'}}</p>
+              <p><i class="bi bi-car-front"></i><strong> Categoria:</strong> {{ veiculo.categoria || 'Não informado'}}</p>
             </div>
             <p class="options"><strong>Opcionais:</strong> {{ veiculo.opcionais?.join(', ') }}</p>
+            
+              <p class="descricao">
+                <strong>Descrição:</strong> 
+                {{ verDescricao ? (veiculo.descricao || 'Sem descrição disponível.') : (veiculo.descricao ? veiculo.descricao.slice(0, 100) + '...' : 'Sem descrição disponível.') }}
+              </p>
+              <button v-if="veiculo.descricao && veiculo.descricao.length > 100" @click="verDescricao = !verDescricao" class="descricao-btn">
+                {{ verDescricao ? "Ocultar descrição" : "Ver descrição" }}
+              </button>
+            
           </div>
 
           <!-- Informações do Vendedor -->
-          <div class="info-section seller-details" v-if="vendedor">
+          <div class="info-section " v-if="vendedor">
             <h4>Informações do Vendedor</h4> 
-            <p class="seller-name"><i class="bi bi-person-circle"></i> <strong>Nome:</strong> {{ vendedor.nome }} {{ vendedor.sobrenome }}</p>
-            <p><i class="bi bi-envelope"></i> <strong>Email:</strong> {{ vendedor.email }}</p>
-            <p><i class="bi bi-telephone"></i> <strong>Telefone:</strong> {{ vendedor.telefone }}</p>
-            <p><i class="bi bi-geo-alt"></i> <strong>Localização:</strong> {{ vendedor.cidade }}, {{ vendedor.estado }}</p>
+            <p class="seller-name"><i class="bi bi-person-circle"></i> {{ vendedor.nome }} {{ vendedor.sobrenome }}</p>
+            <div class="contact-info">
+              <p><i class="bi bi-envelope"></i> <strong>Email:</strong> {{ vendedor.email }}</p>
+              <p><i class="bi bi-telephone"></i> <strong>Telefone:</strong> {{ vendedor.telefone }}</p>
+              <p><i class="bi bi-geo-alt"></i> <strong>Localização:</strong> {{ vendedor.cidade }}, {{ vendedor.estado }}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -114,6 +125,7 @@ export default {
       daoService: new DAOService('anuncios'),
       imagemSelecionada: 0,
       telaCheiaAtiva: false,
+      verDescricao: false,
     };
   },
   async created() {
@@ -338,8 +350,6 @@ beforeUnmount() {
   z-index: 10;
 }
 
-
-
 /* 📌 Ajuste das setas de navegação */
 .left {
   left: -40px;
@@ -456,14 +466,41 @@ beforeUnmount() {
 
 /* 🔷 Nome do vendedor */
 .seller-name {
-  font-size: 30px;
+  font-size: 45px;
   font-weight: bold;
   color: #5b3199;
+}
+
+.contact-info p {
+  font-size: 21px; /* Aumenta o tamanho */
+  display: block;
 }
 
 /* 🔷 Ícones */
 i {
   color: #5b3199;
+}
+
+.descricao-container {
+  margin-top: 15px;
+  background: #f9f9f9;
+  padding: 10px;
+  border-radius: 10px;
+  text-align: justify;
+}
+
+.descricao-btn {
+  background: none;
+  border: none;
+  color: #5b3199;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 5px;
+  font-weight: bold;
+}
+
+.descricao-btn:hover {
+  text-decoration: underline;
 }
 
 /* ✅ RESPONSIVIDADE PARA MOBILE */
