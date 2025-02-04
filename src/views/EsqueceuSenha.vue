@@ -1,36 +1,39 @@
 <template>
-  <div class="container-fluid vh-100 d-flex align-items-center justify-content-center bg-light">
-    <div class="row shadow-lg rounded overflow-hidden login-container">
-      <!-- Área da imagem -->
-      <div class="col-md-6 d-none d-md-flex align-items-center justify-content-center image-section">
-      </div>
+  <div>
+    <Navbar />
 
-      <!-- Área do formulário -->
-      <div class="col-md-6 p-5 bg-white form-section">
-        <h2 class="fw-bold text-center mb-3">Esqueceu sua senha?</h2>
-        <p class="text-center text-muted">Informe seu email cadastrado para receber instruções de redefinição de senha</p>
+    <div class="container forgot-password-background">
+      <div class="row forgot-password-container">
+        <!-- Área da imagem -->
+        <div class="col-md-6 image-section"></div>
 
-        <form @submit.prevent="recuperarSenha">
-          <div class="mb-3">
-            <label for="email" class="form-label">Email</label>
-            <input 
-              type="email" 
-              v-model="email" 
-              id="email" 
-              class="form-control" 
-              placeholder="user@exemplo.com" 
-              required
-            />
-          </div>
+        <!-- Área do formulário -->
+        <div class="col-md-6 form-section">
+          <h2>Esqueceu sua senha?</h2>
+          <p>Informe seu email cadastrado para receber instruções de redefinição de senha</p>
 
-          <button type="submit" class="btn btn-primary w-100 py-2" :disabled="loading">
-            {{ loading ? "Enviando..." : "Enviar" }}
-          </button>
+          <form @submit.prevent="recuperarSenha">
+            <div class="mb-3">
+              <label for="email">Email</label>
+              <input
+                type="email"
+                v-model="email"
+                id="email"
+                class="form-control"
+                placeholder="user@exemplo.com"
+                required
+              />
+            </div>
 
-          <div class="text-center mt-3">
-            <router-link to="/login" class="text-decoration-none">Voltar para Login</router-link>
-          </div>
-        </form>
+            <button type="submit" class="btn btn-primary" :disabled="loading">
+              {{ loading ? "Enviando..." : "Enviar" }}
+            </button>
+
+            <div class="text-center mt-3">
+              <router-link to="/login">Voltar para Login</router-link>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   </div>
@@ -38,9 +41,11 @@
 
 <script>
 import { getAuth, sendPasswordResetEmail } from "firebase/auth";
+import Navbar from '@/components/NavBar.vue';
 
 export default {
   name: "EsqueceuSenha",
+  components: { Navbar },
   data() {
     return {
       email: "",
@@ -71,30 +76,66 @@ export default {
 </script>
 
 <style scoped>
-/* Layout principal */
-.login-container {
-  max-width: 900px;
-  width: 100%;
-  background: #fff;
-  border-radius: 15px;
+/* Fundo da tela */
+.forgot-password-background {
+  background-color: #f3f3f3;
+  height: calc(100vh - 60px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Estilo da área de imagem */
+/* Card de recuperação de senha */
+.forgot-password-container {
+  width: 95vw;
+  max-width: 1400px; /* Igual ao card da tela de login */
+  height: 85vh;
+  max-height: 700px;
+  background: #fff;
+  border-radius: 15px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  display: flex;
+  transform: translateY(-70px); /* Subir o card */
+}
+
+/* Área da imagem */
 .image-section {
+  flex: 1;
   background: url('/logos/imagem_login.png') no-repeat center center;
   background-size: cover;
-  position: relative;
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .image-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 /* Formulário */
 .form-section {
+  flex: 1;
+  padding: 40px;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  background-color: white;
 }
 
 .form-section h2 {
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 10px;
   color: #343a40;
+}
+
+.form-section p {
+  text-align: center;
+  color: #6c757d;
+  margin-bottom: 20px;
 }
 
 .form-control {
@@ -106,17 +147,21 @@ export default {
   background: #5B3199;
   border: none;
   transition: all 0.3s;
+  width: 100%;
+  padding: 10px;
 }
 
 .btn-primary:hover {
   background: #3a1e66;
 }
 
-.text-decoration-none {
+.text-center a {
   color: #5B3199;
+  text-decoration: none;
+  margin-top: 10px;
 }
 
-.text-decoration-none:hover {
+.text-center a:hover {
   text-decoration: underline;
 }
 </style>

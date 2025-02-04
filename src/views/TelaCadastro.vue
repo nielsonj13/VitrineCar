@@ -1,83 +1,84 @@
 <template>
-  <div class="container-fluid vh-100 d-flex align-items-center justify-content-center bg-light">
-    <div class="row shadow-lg rounded overflow-hidden login-container">
-      <!-- Área da imagem -->
-      <div class="col-md-6 d-none d-md-flex align-items-center justify-content-center image-section">
-      </div>
+  <div>
+    <Navbar />
 
-      <!-- Área de cadastro -->
-      <div class="col-md-6 p-5 bg-white form-section">
-        <h2 class="fw-bold text-center mb-3">Crie sua conta</h2>
+    <div class="container register-background">
+      <div class="row register-container">
+        <!-- Área da imagem -->
+        <div class="col-md-6 image-section"></div>
 
-        <form @submit.prevent="handleCadastro">
-          <div class="mb-3">
-            <label for="email" class="form-label">Email</label>
-            <input 
-              type="email" 
-              v-model="email" 
-              id="email" 
-              class="form-control" 
-              placeholder="user@exemplo.com" 
-              required
-            />
-          </div>
+        <!-- Área de cadastro -->
+        <div class="col-md-6 form-section">
+          <h2>Crie sua conta</h2>
 
-          <div class="mb-3">
-            <label for="nome" class="form-label">Nome</label>
-            <input 
-              type="text" 
-              v-model="nome" 
-              id="nome" 
-              class="form-control" 
-              placeholder="Digite seu nome" 
-              required
-            />
-          </div>
+          <form @submit.prevent="handleCadastro">
+            <div class="mb-3">
+              <label for="email">Email</label>
+              <input 
+                type="email" 
+                v-model="email" 
+                id="email" 
+                class="form-control" 
+                placeholder="user@exemplo.com" 
+                required 
+              />
+            </div>
 
-          <div class="mb-3">
-            <label for="sobrenome" class="form-label">Sobrenome</label>
-            <input 
-              type="text" 
-              v-model="sobrenome" 
-              id="sobrenome" 
-              class="form-control" 
-              placeholder="Digite seu sobrenome" 
-              required
-            />
-          </div>
+            <div class="mb-3">
+              <label for="nome">Nome</label>
+              <input 
+                type="text" 
+                v-model="nome" 
+                id="nome" 
+                class="form-control" 
+                placeholder="Digite seu nome" 
+                required 
+              />
+            </div>
 
-          <div class="mb-3">
-            <label for="senha" class="form-label">Senha</label>
-            <input 
-              type="password" 
-              v-model="senha" 
-              id="senha" 
-              class="form-control" 
-              placeholder="Digite sua senha" 
-              required
-            />
-          </div>
+            <div class="mb-3">
+              <label for="sobrenome">Sobrenome</label>
+              <input 
+                type="text" 
+                v-model="sobrenome" 
+                id="sobrenome" 
+                class="form-control" 
+                placeholder="Digite seu sobrenome" 
+                required 
+              />
+            </div>
 
-          <div class="mb-3">
-            <label for="confirmar-senha" class="form-label">Confirmar Senha</label>
-            <input 
-              type="password" 
-              v-model="confirmarSenha" 
-              id="confirmar-senha" 
-              class="form-control" 
-              placeholder="Confirme sua senha" 
-              required
-            />
-          </div>
+            <div class="mb-3">
+              <label for="senha">Senha</label>
+              <input 
+                type="password" 
+                v-model="senha" 
+                id="senha" 
+                class="form-control" 
+                placeholder="Digite sua senha" 
+                required 
+              />
+            </div>
 
-          <button type="submit" class="btn btn-primary w-100 py-2">
-            Cadastrar-se
-          </button>
+            <div class="mb-3">
+              <label for="confirmar-senha">Confirmar Senha</label>
+              <input 
+                type="password" 
+                v-model="confirmarSenha" 
+                id="confirmar-senha" 
+                class="form-control" 
+                placeholder="Confirme sua senha" 
+                required 
+              />
+            </div>
 
-          <div class="text-center mt-3">
-            <router-link to="/login" class="text-decoration-none">Já tem uma conta? Faça login</router-link>
-          </div>
-        </form>
+            <button type="submit" class="btn btn-primary">Cadastrar-se</button>
+
+            <div class="text-center mt-3">
+              <router-link to="/login">Já tem uma conta? Faça login</router-link>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   </div>
@@ -87,9 +88,11 @@
 import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { db } from "@/firebase";
 import { doc, setDoc } from "firebase/firestore";
+import Navbar from '@/components/NavBar.vue';
 
 export default {
   name: "TelaCadastro",
+  components: { Navbar },
   data() {
     return {
       email: "",
@@ -114,7 +117,7 @@ export default {
         const auth = getAuth();
         const userCredential = await createUserWithEmailAndPassword(auth, this.email, this.senha);
         const user = userCredential.user;
-        
+
         await updateProfile(user, {
           displayName: `${this.nome} ${this.sobrenome}`,
         });
@@ -140,29 +143,59 @@ export default {
 </script>
 
 <style scoped>
-/* Layout principal */
-.login-container {
-  max-width: 900px;
-  width: 100%;
-  background: #fff;
-  border-radius: 15px;
+/* Fundo da tela */
+.register-background {
+  background-color: #f3f3f3;
+  height: calc(100vh - 60px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Estilo da área de imagem */
+/* Card de cadastro */
+.register-container {
+  width: 95vw;
+  max-width: 1400px; /* Igual ao card da tela de login */
+  height: 85vh;
+  max-height: 700px;
+  background: #fff;
+  border-radius: 15px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  display: flex;
+  transform: translateY(-70px); /* Subir o card */
+}
+
+/* Área da imagem */
 .image-section {
+  flex: 1;
   background: url('/logos/imagem_login.png') no-repeat center center;
   background-size: cover;
-  position: relative;
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .image-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 /* Formulário */
 .form-section {
+  flex: 1;
+  padding: 40px;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  background-color: white;
 }
 
 .form-section h2 {
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 10px;
   color: #343a40;
 }
 
@@ -175,17 +208,21 @@ export default {
   background: #5B3199;
   border: none;
   transition: all 0.3s;
+  width: 100%;
+  padding: 10px;
 }
 
 .btn-primary:hover {
   background: #3a1e66;
 }
 
-.text-decoration-none {
+.text-center a {
   color: #5B3199;
+  text-decoration: none;
+  margin-top: 10px;
 }
 
-.text-decoration-none:hover {
+.text-center a:hover {
   text-decoration: underline;
 }
 </style>
