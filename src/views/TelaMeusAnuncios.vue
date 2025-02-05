@@ -28,7 +28,7 @@
             </div>
             <p v-if="anuncio.vendido" class="vendido-label">Vendido</p>
             <p>R$ {{ anuncio.valor }}</p>
-            <span>{{ anuncio.anoModelo }}/{{ anuncio.anoFabricacao }}</span>
+            <span>{{ anuncio.anoFabricacao }}/{{ anuncio.anoModelo }}</span>
           </div>
           <div class="card-actions">
           <!-- Veículos Ativos -->

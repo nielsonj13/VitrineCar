@@ -60,7 +60,7 @@
                 ></i>
               </div>
               <p>R$ {{ anuncio.valor }}</p>
-              <span>{{ anuncio.anoModelo }}/{{ anuncio.anoFabricacao }}</span>
+              <span>{{ anuncio.anoFabricacao }}/{{ anuncio.anoModelo }}</span>
             </div>
             <div class="card-actions">
               <button class="btn-ver" @click="verAnuncio(anuncio.id)">Ver anúncio</button>
