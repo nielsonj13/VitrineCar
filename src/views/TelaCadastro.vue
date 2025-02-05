@@ -1,7 +1,5 @@
 <template>
   <div>
-    <Navbar />
-
     <div class="container register-background">
       <div class="row register-container">
         <!-- Área da imagem -->
@@ -72,7 +70,9 @@
               />
             </div>
 
-            <button type="submit" class="btn btn-primary">Cadastrar-se</button>
+            <button type="submit" class="btn btn-primary" :disabled="verificandoEmail">
+              {{ verificandoEmail ? 'Verificando e-mail...' : 'Cadastrar-se' }}
+            </button>
 
             <div class="text-center mt-3">
               <router-link to="/login">Já tem uma conta? Faça login</router-link>
@@ -85,14 +85,12 @@
 </template>
 
 <script>
-import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword, updateProfile, sendEmailVerification, signOut } from "firebase/auth";
 import { db } from "@/firebase";
 import { doc, setDoc } from "firebase/firestore";
-import Navbar from '@/components/NavBar.vue';
 
 export default {
   name: "TelaCadastro",
-  components: { Navbar },
   data() {
     return {
       email: "",
@@ -100,6 +98,8 @@ export default {
       sobrenome: "",
       senha: "",
       confirmarSenha: "",
+      verificandoEmail: false,
+      verificarInterval: null,
     };
   },
   methods: {
@@ -122,6 +122,37 @@ export default {
           displayName: `${this.nome} ${this.sobrenome}`,
         });
 
+        // Enviar e-mail de verificação
+        await sendEmailVerification(user);
+        alert("Cadastro iniciado com sucesso! Verifique seu e-mail para ativar a conta.");
+
+        // Deslogar o usuário após o cadastro
+        await signOut(auth);
+
+        // Iniciar verificação contínua do e-mail
+        this.verificandoEmail = true;
+        this.verificarInterval = setInterval(async () => {
+          const auth = getAuth();
+          const currentUser = auth.currentUser;
+
+          if (currentUser) {
+            await currentUser.reload();
+            if (currentUser.emailVerified) {
+              clearInterval(this.verificarInterval);
+              await this.finalizarCadastro(currentUser);
+            }
+          }
+        }, 3000); // Verifica a cada 3 segundos
+
+      } catch (error) {
+        alert("Erro ao cadastrar: " + error.message);
+        console.error(error);
+        this.verificandoEmail = false;
+      }
+    },
+
+    async finalizarCadastro(user) {
+      try {
         const userRef = doc(db, "usuarios", user.uid);
         await setDoc(userRef, {
           nome: this.nome,
@@ -131,11 +162,11 @@ export default {
           contato: { telefone: "", email: this.email }
         });
 
-        alert("Cadastro realizado com sucesso!");
-        this.$router.push("/");
+        
+        this.verificandoEmail = false;
+        
       } catch (error) {
-        alert("Erro ao cadastrar: " + error.message);
-        console.error(error);
+        console.error("Erro ao finalizar o cadastro:", error);
       }
     },
   },
@@ -155,7 +186,7 @@ export default {
 /* Card de cadastro */
 .register-container {
   width: 95vw;
-  max-width: 1400px; /* Igual ao card da tela de login */
+  max-width: 1400px;
   height: 85vh;
   max-height: 700px;
   background: #fff;
@@ -163,7 +194,7 @@ export default {
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   display: flex;
-  transform: translateY(-70px); /* Subir o card */
+  
 }
 
 /* Área da imagem */
@@ -224,5 +255,11 @@ export default {
 
 .text-center a:hover {
   text-decoration: underline;
+}
+
+.logo {
+  display: block;
+  max-width: 250px; /* Define um tamanho máximo para a logo */
+  margin: 0 auto 15px auto; /* Centraliza a logo e adiciona espaçamento abaixo */
 }
 </style>

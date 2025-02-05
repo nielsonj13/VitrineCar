@@ -1,6 +1,5 @@
 <template>
   <div>
-    <Navbar />
 
     <div class="container forgot-password-background">
       <div class="row forgot-password-container">
@@ -9,6 +8,8 @@
 
         <!-- Área do formulário -->
         <div class="col-md-6 form-section">
+          <img src="/public/logos/logo_vitrinecar.png" alt="VitrineCar" class="logo">
+
           <h2>Esqueceu sua senha?</h2>
           <p>Informe seu email cadastrado para receber instruções de redefinição de senha</p>
 
@@ -41,11 +42,9 @@
 
 <script>
 import { getAuth, sendPasswordResetEmail } from "firebase/auth";
-import Navbar from '@/components/NavBar.vue';
 
 export default {
   name: "EsqueceuSenha",
-  components: { Navbar },
   data() {
     return {
       email: "",
@@ -96,7 +95,7 @@ export default {
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   display: flex;
-  transform: translateY(-70px); /* Subir o card */
+  
 }
 
 /* Área da imagem */
@@ -164,4 +163,11 @@ export default {
 .text-center a:hover {
   text-decoration: underline;
 }
+
+.logo {
+  display: block;
+  max-width: 250px; /* Define um tamanho máximo para a logo */
+  margin: 0 auto 15px auto; /* Centraliza a logo e adiciona espaçamento abaixo */
+}
+
 </style>
