@@ -21,16 +21,18 @@
           <i class="bi bi-chevron-right"></i>
         </button>
 
-        <!-- Miniaturas -->
-        <div class="miniaturas">
-          <img 
-            v-for="(imagem, index) in veiculo.imagens" 
-            :key="'thumb-' + index"
-            :src="imagem" 
-            class="miniatura img-thumbnail" 
-            @click="selecionarImagem(index)" 
-            :class="{ active: index === imagemSelecionada }"
-            alt="Miniatura do veículo">
+        <!-- Miniaturas com rolagem dinâmica -->
+        <div class="miniaturas-container">
+          <div class="miniaturas">
+            <img 
+              v-for="(imagem, index) in miniaturasVisiveis" 
+              :key="'thumb-' + (miniaturaInicio + index)"
+              :src="imagem" 
+              class="miniatura img-thumbnail" 
+              @click="selecionarImagem(miniaturaInicio + index)" 
+              :class="{ active: (miniaturaInicio + index) === imagemSelecionada }"
+              alt="Miniatura do veículo">
+          </div>
         </div>
       </div>
 
@@ -124,6 +126,7 @@ export default {
       vendedor: null,
       daoService: new DAOService('anuncios'),
       imagemSelecionada: 0,
+      miniaturaInicio: 0,
       telaCheiaAtiva: false,
       verDescricao: false,
     };
@@ -132,20 +135,27 @@ export default {
     await this.carregarVeiculo();
   },
   // Adicionamos e removemos o evento global de teclado no ciclo de vida do componente
-mounted() {
-  document.addEventListener("keydown", this.tecladoNavegacao);
-},
+  mounted() {
+    document.addEventListener("keydown", this.tecladoNavegacao);
+  },
 
-beforeUnmount() {
-  document.removeEventListener("keydown", this.tecladoNavegacao);
-},
+  beforeUnmount() {
+    document.removeEventListener("keydown", this.tecladoNavegacao);
+  },
+  computed: {
+    miniaturasVisiveis() {
+      return this.veiculo?.imagens.slice(this.miniaturaInicio, this.miniaturaInicio + 4) || [];
+    }
+  },
   methods: {
     selecionarImagem(index) {
       this.imagemSelecionada = index;
+      this.atualizarMiniaturas();
     },
     proximaImagem() {
       if (this.imagemSelecionada < this.veiculo.imagens.length - 1) {
         this.imagemSelecionada++;
+        this.atualizarMiniaturas();
       } else {
         this.imagemSelecionada = 0; // Volta para a primeira imagem
       }
@@ -153,8 +163,16 @@ beforeUnmount() {
     anteriorImagem() {
       if (this.imagemSelecionada > 0) {
         this.imagemSelecionada--;
+        this.atualizarMiniaturas();
       } else {
         this.imagemSelecionada = this.veiculo.imagens.length - 1; // Volta para a última imagem
+      }
+    },
+    atualizarMiniaturas() {
+      if (this.imagemSelecionada < this.miniaturaInicio) {
+        this.miniaturaInicio = this.imagemSelecionada;
+      } else if (this.imagemSelecionada >= this.miniaturaInicio + 4) {
+        this.miniaturaInicio = this.imagemSelecionada - 3;
       }
     },
     abrirTelaCheia() {

@@ -128,18 +128,21 @@
     <div v-else-if="etapa === 3" class="content">
       <h3>Adicionar fotos do veículo</h3>
       <div class="upload-box">
-        <div class="form-group">
-          <label>Link da Imagem 1</label>
-          <input type="text" v-model="anuncio.imagens[0]" placeholder="Insira o link da imagem" />
+        <!-- Loop para exibir os campos de imagens -->
+        <div class="form-group" v-for="(imagem, index) in anuncio.imagens" :key="index">
+          <label>Link da Imagem {{ index + 1 }}</label>
+          <div class="input-container">
+            <input type="text" v-model="anuncio.imagens[index]" placeholder="Insira o link da imagem" />
+            
+            <!-- Ícone de Remover dentro do Input -->
+            <button v-if="index > 2" @click="removerImagem(index)" class="remove-btn" title="Remover imagem">
+              <i class="bi bi-x-circle-fill"></i>
+            </button>
+          </div>
         </div>
-        <div class="form-group">
-          <label>Link da Imagem 2</label>
-          <input type="text" v-model="anuncio.imagens[1]" placeholder="Insira o link da imagem" />
-        </div>
-        <div class="form-group">
-          <label>Link da Imagem 3</label>
-          <input type="text" v-model="anuncio.imagens[2]" placeholder="Insira o link da imagem" />
-        </div>
+
+        <!-- Botão para adicionar mais imagens -->
+        <button type="button" class="btn-adicionar" @click="adicionarImagem" :disabled="anuncio.imagens.length >= 10">+ Adicionar Imagem</button>
       </div>
       <div class="actions">
         <button class="btn-back" @click="voltarEtapa">Voltar</button>
@@ -206,6 +209,16 @@ export default {
     }
   },
   methods: {
+    adicionarImagem() {
+      if (this.anuncio.imagens.length < 10) {
+        this.anuncio.imagens.push("");
+      }
+    },
+
+    removerImagem(index) {
+      this.anuncio.imagens.splice(index, 1); // Remove o campo de imagem
+    },
+
     async carregarMarcas() {
       try {
         const response = await axios.get(
@@ -417,13 +430,58 @@ h3 {
 }
 
 .upload-box {
-  border: 2px dashed #5b3199;
-  padding: 20px;
-  border-radius: 10px;
-  background-color: #f9f9f9;
-  color: #5b3199;
-  font-weight: bold;
+  margin-top: 20px;
+  padding: 10px;
 }
+
+.btn-adicionar {
+  background-color: #531B76;
+  color: white;
+  padding: 8px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+.input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-container input {
+  width: 100%;
+  padding-right: 35px; /* Espaço extra para o ícone */
+  box-sizing: border-box;
+}
+
+.remove-btn {
+  position: absolute;
+  right: 10px;  /* Posicionamento à direita do input */
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  transition: transform 0.2s, color 0.3s ease;
+}
+
+.remove-btn i {
+  color: #ff4d4d; /* Vermelho suave */
+  font-size: 20px;
+}
+
+.remove-btn:hover i {
+  color: #d11a2a; /* Tom mais escuro no hover */
+  transform: scale(1.2); /* Efeito de zoom */
+}
+
+
+
 
 .actions {
   display: flex;
