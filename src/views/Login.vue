@@ -25,16 +25,21 @@
               />
             </div>
 
-            <div class="mb-3">
+            <div class="mb-3 password-container">
               <label for="password">Senha</label>
-              <input 
-                type="password" 
-                v-model="password" 
-                id="password" 
-                class="form-control" 
-                placeholder="Digite sua senha" 
-                required 
-              />
+              <div class="input-group">
+                <input 
+                  :type="mostrarSenha ? 'text' : 'password'" 
+                  v-model="password" 
+                  id="password" 
+                  class="form-control" 
+                  placeholder="Digite sua senha" 
+                  required 
+                />
+                <button type="button" class="toggle-password" @click="mostrarSenha = !mostrarSenha">
+                  <i :class="mostrarSenha ? 'bi bi-eye-slash-fill' : 'bi bi-eye-fill'"></i>
+                </button>
+              </div>
             </div>
 
             <button type="submit" class="btn btn-primary">Entrar</button>
@@ -58,7 +63,11 @@ export default {
   name: "Login",
   components: { Navbar },
   data() {
-    return { email: "", password: "" };
+    return { 
+      email: "", 
+      password: "",
+      mostrarSenha: false, // Estado para controlar a visibilidade da senha
+    };
   },
   methods: {
     async login() {
@@ -87,7 +96,7 @@ export default {
 /* Card de login */
 .login-container {
   width: 95vw;
-  max-width: 1400px; /* Aumentei a largura do card */
+  max-width: 1400px; 
   height: 85vh;
   max-height: 700px;
   background: #fff;
@@ -95,7 +104,7 @@ export default {
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   display: flex;
-  transform: translateY(-70px); /* Subi mais o card */
+  transform: translateY(-70px); 
 }
 
 /* Área da imagem */
@@ -134,6 +143,34 @@ export default {
 .form-control {
   padding: 12px;
   font-size: 16px;
+  width: 100%;
+}
+
+/* Ajustando o botão de alternar senha */
+.password-container {
+  position: relative;
+}
+
+.input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: #5B3199;
+}
+
+.toggle-password:hover {
+  color: #3a1e66;
 }
 
 .btn-primary {
