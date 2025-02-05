@@ -43,9 +43,10 @@
 
             <button type="submit" class="btn btn-primary">Entrar</button>
 
-            <div class="text-center mt-3">
+            <div class="text-center mt-3  links-container">
               <router-link to="/esqueceu-senha">Esqueceu a senha?</router-link>
               <router-link to="/cadastro">Cadastre-se</router-link>
+              <router-link to="/verificar-email">Reenviar e-mail de verificação</router-link>
             </div>
             <!-- Botão de voltar no final do container -->
           <button type="button" class="btn-link-secondary voltar-btn" @click="voltarParaPrincipal">
@@ -243,7 +244,22 @@ export default {
   text-decoration: underline;
 }
 
+.links-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centraliza os links */
+  gap: 5px; /* Espaçamento entre os links */
+}
 
+.links-container a {
+  color: #5B3199;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.links-container a:hover {
+  text-decoration: underline;
+}
 
 .text-center a {
   color: #5B3199;

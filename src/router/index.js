@@ -16,6 +16,7 @@ import TelaResultados from '@/views/TelaResultados.vue';
 import TelaAnuncios from '@/views/TelaAnuncios.vue';
 import Footer from '@/components/Footer.vue';
 import SobreNos from '@/views/SobreNos.vue';
+import VerificarEmail from '@/views/VerificarEmail.vue';
 
 // https://vitrinecar-71a27.web.app
 
@@ -46,6 +47,11 @@ const router = createRouter({
       path: '/esqueceu-senha',
       name: 'EsqueceuSenha',
       component: EsqueceuSenha,
+    },
+    {
+      path: '/verificar-email',
+      name: 'VerificarEmail',
+      component: VerificarEmail,
     },
     {
       path: '/codigo-recuperacao',
