@@ -277,14 +277,24 @@ export default {
 
     },
     formatarKm() {
-      if (this.anuncio.km) {
-        const numeroLimpo = this.anuncio.km.replace(/\D/g, "");
-        const kmFormatado = new Intl.NumberFormat("pt-BR").format(
-          parseInt(numeroLimpo)
-        );
-        this.anuncio.km = kmFormatado;
-      }
-    },
+  if (!this.anuncio.km) {
+    this.anuncio.km = ""; // Se estiver vazio, mantém vazio
+    return;
+  }
+
+  // Remove caracteres não numéricos
+  let numeroLimpo = this.anuncio.km.replace(/\D/g, "");
+
+  // Se não houver número válido, define o campo como vazio
+  if (!numeroLimpo) {
+    this.anuncio.km = "";
+    return;
+  }
+
+  // Formata o número corretamente
+  this.anuncio.km = new Intl.NumberFormat("pt-BR").format(parseInt(numeroLimpo, 10));
+},
+
     avancarEtapa() {
       if (this.etapa < 3) this.etapa++;
     },

@@ -275,15 +275,20 @@ export default {
       this.anuncio[campo] = this.anuncio[campo].slice(0, 4);
     }
   },
-    formatarKm() {
-      if (this.anuncio.km) {
-        const numeroLimpo = this.anuncio.km.replace(/\D/g, "");
-        const kmFormatado = new Intl.NumberFormat("pt-BR").format(
-          parseInt(numeroLimpo)
-        );
-        this.anuncio.km = kmFormatado;
-      }
-    },
+  formatarKm() {
+  // Remove qualquer caractere que não seja número
+  const numeroLimpo = this.anuncio.km.replace(/\D/g, "");
+
+  // Se o campo estiver vazio, define como string vazia
+  if (!numeroLimpo) {
+    this.anuncio.km = "";
+    return;
+  }
+
+  // Formata o número com separadores de milhar
+  const kmFormatado = new Intl.NumberFormat("pt-BR").format(parseInt(numeroLimpo));
+  this.anuncio.km = kmFormatado;
+},
 
     avancarEtapa() {
       if (this.etapa < 3) this.etapa++;
