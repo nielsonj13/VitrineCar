@@ -295,9 +295,26 @@ export default {
   this.anuncio.km = new Intl.NumberFormat("pt-BR").format(parseInt(numeroLimpo, 10));
 },
 
-    avancarEtapa() {
-      if (this.etapa < 3) this.etapa++;
-    },
+avancarEtapa() {
+  if (this.etapa === 1) {
+    // Validação do ano antes de avançar
+    const anoAtual = new Date().getFullYear();
+    const anoFabricacao = parseInt(this.anuncio.anoFabricacao);
+    const anoModelo = parseInt(this.anuncio.anoModelo);
+
+    if (isNaN(anoFabricacao) || anoFabricacao > anoAtual) {
+      alert("Ano de fabricação inválido. O ano de fabricação não pode ser maior que o ano atual.");
+      return;
+    }
+
+    if (isNaN(anoModelo) || anoModelo < anoFabricacao || anoModelo > anoFabricacao + 1) {
+      alert("O ano do modelo deve ser igual ou no máximo 1 ano a mais que o ano de fabricação.");
+      return;
+    }
+  }
+
+  if (this.etapa < 3) this.etapa++;
+},
     voltarEtapa() {
       if (this.etapa > 1) this.etapa--;
     },
@@ -320,20 +337,7 @@ export default {
           alert("Você precisa estar logado para criar um anúncio.");
           return;
         }
-        // Nova validação dos anos antes de finalizar o anúncio
-        const anoAtual = new Date().getFullYear();
-        const anoFabricacao = parseInt(this.anuncio.anoFabricacao);
-        const anoModelo = parseInt(this.anuncio.anoModelo);
-
-        if (isNaN(anoFabricacao) || anoFabricacao > anoAtual) {
-          alert("Ano de fabricação inválido, o ano de fabricação Não pode ser maior que o ano atual.");
-          return;
-        }
-
-        if (isNaN(anoModelo) || anoModelo < anoFabricacao || anoModelo > anoFabricacao + 1) {
-          alert("O ano do modelo deve ser igual ou no máximo 1 ano a mais que o ano de fabricação.");
-          return;
-        }
+        
         this.anuncio.modelo = this.formatarModelo(this.anuncio.modelo);
         this.anuncio.marca = this.marcas.find(m => m.codigo === this.anuncio.marca)?.nome || "";
         this.anuncio.marca = this.anuncio.marca.trim().toLowerCase(); 

@@ -290,9 +290,26 @@ export default {
   this.anuncio.km = kmFormatado;
 },
 
-    avancarEtapa() {
-      if (this.etapa < 3) this.etapa++;
-    },
+avancarEtapa() {
+  if (this.etapa === 1) {
+    // Validação do ano antes de avançar
+    const anoAtual = new Date().getFullYear();
+    const anoFabricacao = parseInt(this.anuncio.anoFabricacao);
+    const anoModelo = parseInt(this.anuncio.anoModelo);
+
+    if (isNaN(anoFabricacao) || anoFabricacao > anoAtual) {
+      alert("Ano de fabricação inválido. O ano de fabricação não pode ser maior que o ano atual.");
+      return;
+    }
+
+    if (isNaN(anoModelo) || anoModelo < anoFabricacao || anoModelo > anoFabricacao + 1) {
+      alert("O ano do modelo deve ser igual ou no máximo 1 ano a mais que o ano de fabricação.");
+      return;
+    }
+  }
+
+  if (this.etapa < 3) this.etapa++;
+},
     voltarEtapa() {
       if (this.etapa > 1) this.etapa--;
     },
@@ -380,21 +397,6 @@ export default {
           this.anuncio.modelo = anuncioOriginal.modelo;
         } else {
           this.anuncio.modelo = this.formatarModelo(this.anuncio.modelo);
-        }
-
-        // Nova validação dos anos antes de salvar a edição
-        const anoAtual = new Date().getFullYear();
-        const anoFabricacao = parseInt(this.anuncio.anoFabricacao);
-        const anoModelo = parseInt(this.anuncio.anoModelo);
-
-        if (isNaN(anoFabricacao) || anoFabricacao > anoAtual) {
-          alert("Ano de fabricação inválido, o ano de fabricação Não pode ser maior que o ano atual.");
-          return;
-        }
-
-        if (isNaN(anoModelo) || anoModelo < anoFabricacao || anoModelo > anoFabricacao + 1) {
-          alert("O ano do modelo deve ser igual ou no máximo 1 ano a mais que o ano de fabricação.");
-          return;
         }
 
         // Normalizar os campos antes de salvar
