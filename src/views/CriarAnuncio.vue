@@ -253,6 +253,7 @@ export default {
       if (this.anuncio[campo].length > 4) {
         this.anuncio[campo] = this.anuncio[campo].slice(0, 4);
       }
+      
     },
     formatarValor() {
   if (this.anuncio.valor) {
@@ -277,44 +278,50 @@ export default {
 
     },
     formatarKm() {
-  if (!this.anuncio.km) {
-    this.anuncio.km = ""; // Se estiver vazio, mantém vazio
-    return;
-  }
+      if (!this.anuncio.km) {
+        this.anuncio.km = ""; // Se estiver vazio, mantém vazio
+        return;
+      }
 
-  // Remove caracteres não numéricos
-  let numeroLimpo = this.anuncio.km.replace(/\D/g, "");
+      // Remove caracteres não numéricos
+      let numeroLimpo = this.anuncio.km.replace(/\D/g, "");
 
-  // Se não houver número válido, define o campo como vazio
-  if (!numeroLimpo) {
-    this.anuncio.km = "";
-    return;
-  }
+      // Se não houver número válido, define o campo como vazio
+      if (!numeroLimpo) {
+        this.anuncio.km = "";
+        return;
+      }
 
-  // Formata o número corretamente
-  this.anuncio.km = new Intl.NumberFormat("pt-BR").format(parseInt(numeroLimpo, 10));
-},
+      // Formata o número corretamente
+      this.anuncio.km = new Intl.NumberFormat("pt-BR").format(parseInt(numeroLimpo, 10));
+    },
 
-avancarEtapa() {
-  if (this.etapa === 1) {
-    // Validação do ano antes de avançar
-    const anoAtual = new Date().getFullYear();
-    const anoFabricacao = parseInt(this.anuncio.anoFabricacao);
-    const anoModelo = parseInt(this.anuncio.anoModelo);
+    avancarEtapa() {
+      if (this.etapa === 1) {
+        // Validação do ano antes de avançar
+        const anoMinimo = 1886;
+        const anoAtual = new Date().getFullYear();
+        const anoFabricacao = parseInt(this.anuncio.anoFabricacao);
+        const anoModelo = parseInt(this.anuncio.anoModelo);
 
-    if (isNaN(anoFabricacao) || anoFabricacao > anoAtual) {
-      alert("Ano de fabricação inválido. O ano de fabricação não pode ser maior que o ano atual.");
-      return;
-    }
+        if (isNaN(anoFabricacao) || anoFabricacao < anoMinimo || anoFabricacao > anoAtual) {
+          alert(`Ano de fabricação inválido. O ano de fabricação do modelo deve estar entre ${anoMinimo} e ${anoAtual}.`);
+          return;
+        }
 
-    if (isNaN(anoModelo) || anoModelo < anoFabricacao || anoModelo > anoFabricacao + 1) {
-      alert("O ano do modelo deve ser igual ou no máximo 1 ano a mais que o ano de fabricação.");
-      return;
-    }
-  }
+        if (isNaN(anoModelo) || anoModelo < anoFabricacao || anoModelo > anoFabricacao + 1) {
+          alert("O ano do modelo deve ser igual ou no máximo 1 ano a mais que o ano de fabricação.");
+          return;
+        }
 
-  if (this.etapa < 3) this.etapa++;
-},
+        if (!this.anuncio.marca || !this.anuncio.modelo || !this.anuncio.valor || !this.anuncio.anoModelo || !this.anuncio.anoFabricacao) {
+              alert("Por favor, preencha todos os campos obrigatórios.");
+              return;
+            }
+      }
+
+      if (this.etapa < 3) this.etapa++;
+    },
     voltarEtapa() {
       if (this.etapa > 1) this.etapa--;
     },
@@ -329,10 +336,7 @@ avancarEtapa() {
     },
     async finalizarAnuncio() {
       try {
-        if (!this.anuncio.marca || !this.anuncio.modelo || !this.anuncio.valor || !this.anuncio.anoModelo || !this.anuncio.anoFabricacao) {
-          alert("Por favor, preencha todos os campos obrigatórios.");
-          return;
-        }
+        
         if (!this.anuncio.userId) {
           alert("Você precisa estar logado para criar um anúncio.");
           return;

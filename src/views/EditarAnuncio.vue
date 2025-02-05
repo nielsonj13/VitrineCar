@@ -274,6 +274,8 @@ export default {
     if (this.anuncio[campo].length > 4) {
       this.anuncio[campo] = this.anuncio[campo].slice(0, 4);
     }
+
+    
   },
   formatarKm() {
   // Remove qualquer caractere que não seja número
@@ -293,12 +295,13 @@ export default {
 avancarEtapa() {
   if (this.etapa === 1) {
     // Validação do ano antes de avançar
+    const anoMinimo = 1886;
     const anoAtual = new Date().getFullYear();
     const anoFabricacao = parseInt(this.anuncio.anoFabricacao);
     const anoModelo = parseInt(this.anuncio.anoModelo);
 
-    if (isNaN(anoFabricacao) || anoFabricacao > anoAtual) {
-      alert("Ano de fabricação inválido. O ano de fabricação não pode ser maior que o ano atual.");
+    if (isNaN(anoFabricacao) ||  anoFabricacao < anoMinimo || anoFabricacao > anoAtual) {
+      alert(`Ano de fabricação inválido. O ano de fabricação do modelo deve estar entre ${anoMinimo} e ${anoAtual}.`);
       return;
     }
 
@@ -306,6 +309,11 @@ avancarEtapa() {
       alert("O ano do modelo deve ser igual ou no máximo 1 ano a mais que o ano de fabricação.");
       return;
     }
+
+    if (!this.anuncio.marca || !this.anuncio.modelo || !this.anuncio.valor || !this.anuncio.anoModelo || !this.anuncio.anoFabricacao) {
+          alert("Por favor, preencha todos os campos obrigatórios.");
+          return;
+        }
   }
 
   if (this.etapa < 3) this.etapa++;
@@ -373,10 +381,7 @@ avancarEtapa() {
   async salvarEdicao() {
       try {
         // Verifica se todos os campos obrigatórios estão preenchidos
-        if (!this.anuncio.valor) {
-          alert("Por favor, preencha todos os campos obrigatórios.");
-          return;
-        }
+        
         if (!this.anuncio.userId) {
           alert("Você precisa estar logado para editar um anúncio.");
           return;
