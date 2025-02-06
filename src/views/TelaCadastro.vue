@@ -128,21 +128,7 @@ export default {
 
         // Deslogar o usuário após o cadastro
         await signOut(auth);
-
-        // Iniciar verificação contínua do e-mail
-        this.verificandoEmail = true;
-        this.verificarInterval = setInterval(async () => {
-          const auth = getAuth();
-          const currentUser = auth.currentUser;
-
-          if (currentUser) {
-            await currentUser.reload();
-            if (currentUser.emailVerified) {
-              clearInterval(this.verificarInterval);
-              await this.finalizarCadastro(currentUser);
-            }
-          }
-        }, 3000); // Verifica a cada 3 segundos
+        this.$router.push("/login");
 
       } catch (error) {
         alert("Erro ao cadastrar: " + error.message);
@@ -162,9 +148,6 @@ export default {
           contato: { telefone: "", email: this.email }
         });
 
-        
-        this.verificandoEmail = false;
-        
       } catch (error) {
         console.error("Erro ao finalizar o cadastro:", error);
       }

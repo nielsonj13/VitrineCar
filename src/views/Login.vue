@@ -62,6 +62,8 @@
 
 <script>
 import { getAuth, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { db } from "@/firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 export default {
   name: "Login",
@@ -79,11 +81,26 @@ export default {
         const userCredential = await signInWithEmailAndPassword(auth, this.email, this.password);
         const user = userCredential.user;
 
-        // Verificação se o e-mail está confirmado
         if (user.emailVerified) {
+          // Verifica se os dados do usuário já estão no Firestore
+          const userRef = doc(db, "usuarios", user.uid);
+          const userDoc = await getDoc(userRef);
+
+          if (!userDoc.exists()) {
+            // Se não existir, salva os dados do usuário
+            await setDoc(userRef, {
+              nome: user.displayName ? user.displayName.split(" ")[0] : "",
+              sobrenome: user.displayName ? user.displayName.split(" ")[1] || "" : "",
+              email: user.email,
+              endereco: { cidade: "", estado: "", cep: "" },
+              contato: { telefone: "", email: user.email }
+            });
+            console.log("Dados do usuário salvos no Firestore.");
+          }
+
           this.$router.push('/');
         } else {
-          await signOut(auth);  // Desloga o usuário caso o e-mail não esteja verificado
+          await signOut(auth);
           alert("Por favor, verifique seu e-mail antes de fazer login.");
         }
       } catch (error) {
@@ -91,9 +108,6 @@ export default {
         console.error(error);
       }
     },
-    voltarParaPrincipal() {
-      this.$router.push('/');
-    }
   },
 };
 </script>
