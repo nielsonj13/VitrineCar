@@ -10,7 +10,6 @@
           <select v-model="tipoVeiculo" @change="carregarMarcas">
             <option value="carros">Carro</option>
             <option value="motos">Moto</option>
-            <option value="caminhoes">Caminhão</option>
           </select>
         </div>
 
@@ -36,30 +35,36 @@
 
         <div class="form-group">
           <label>Ano do Modelo</label>
-          <input type="text" v-model="anuncio.anoModelo" placeholder="Digite o ano do modelo" @input="validateNumberInput('anoModelo'), validarAno('anoModelo')"  />
+          <input type="text" v-model="anuncio.anoModelo" placeholder="Digite o ano do modelo" @input="validarAno('anoModelo')"  />
         </div>
         <div class="form-group">
           <label>Ano de Fabricação</label>
-          <input type="text" v-model="anuncio.anoFabricacao" placeholder="Digite o ano de fabricação" @input="validateNumberInput('anoFabricacao'), validarAno('anoFabricacao')" />
+          <input type="text" v-model="anuncio.anoFabricacao" placeholder="Digite o ano de fabricação" @input="validarAno('anoFabricacao')" />
         </div>
         <div class="form-group">
           <label>Quilometragem (km)</label>
-          <input
-            type="text"
-            v-model="anuncio.km"
-            placeholder="Digite a quilometragem"
-            @input="formatarKm"
-          />
+          <input type="text" v-model="anuncio.km" placeholder="Digite a quilometragem" @input="formatarKm"/>
         </div>
         <div class="form-group">
           <label>Cor</label>
           <select v-model="anuncio.cor">
             <option value="">Escolha uma cor</option>
-            <option>Preto</option>
+            <option>Amarelo</option>
+            <option>Azul</option>
+            <option>Bege</option>
             <option>Branco</option>
-            <option>Vermelho</option>
-            <option>Prata</option>
             <option>Cinza</option>
+            <option>Dourado</option>
+            <option>Grená</option>
+            <option>Laranja</option>
+            <option>Marrom</option>
+            <option>Prata</option>
+            <option>Preto</option>
+            <option>Rosa</option>
+            <option>Roxo</option>
+            <option>Verde</option>
+            <option>Vermelho</option>
+            <option>Fantasia</option>
           </select>
         </div>
         <div class="form-group">
@@ -78,6 +83,9 @@
             <option>SUV</option>
             <option>Picape</option>
             <option>Hatch</option>
+            <option>Esportivo</option>
+            <option>MiniVan</option>
+            <option>Moto</option>
           </select>
         </div>
         <div class="form-group">
@@ -241,10 +249,6 @@ export default {
         console.error("Erro ao carregar modelos:", error);
       }
     },
-
-    validateNumberInput(field) {
-      this.anuncio[field] = this.anuncio[field].replace(/\D/g, "");
-    },
     validarAno(campo) {
       // Remove qualquer caractere que não seja número
       this.anuncio[campo] = this.anuncio[campo].replace(/\D/g, '');
@@ -256,26 +260,25 @@ export default {
       
     },
     formatarValor() {
-  if (this.anuncio.valor) {
-    // Remove caracteres não numéricos
-    let numeroLimpo = this.anuncio.valor.replace(/\D/g, "");
+      if (this.anuncio.valor) {
+        // Remove caracteres não numéricos
+        let numeroLimpo = this.anuncio.valor.replace(/\D/g, "");
 
-    // Se não houver número, define o campo como vazio
-    if (!numeroLimpo) {
-      this.anuncio.valor = "";
-      return;
-    }
+        // Se não houver número, define o campo como vazio
+        if (!numeroLimpo) {
+          this.anuncio.valor = "";
+          return;
+        }
 
-    // Divide por 100 para obter valores corretos e formata sem "R$"
-    const valorFormatado = new Intl.NumberFormat("pt-BR", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(parseFloat(numeroLimpo) / 100);
+        // Divide por 100 para obter valores corretos e formata sem "R$"
+        const valorFormatado = new Intl.NumberFormat("pt-BR", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }).format(parseFloat(numeroLimpo) / 100);
 
-    // Atualiza o campo sem adicionar "R$"
-    this.anuncio.valor = valorFormatado;
-  }
-
+        // Atualiza o campo sem adicionar "R$"
+        this.anuncio.valor = valorFormatado;
+      }
     },
     formatarKm() {
       if (!this.anuncio.km) {

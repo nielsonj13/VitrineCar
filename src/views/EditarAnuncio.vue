@@ -10,7 +10,6 @@
           <select v-model="tipoVeiculo" @change="carregarMarcas">
             <option value="carros">Carro</option>
             <option value="motos">Moto</option>
-            <option value="caminhoes">Caminhão</option>
           </select>
         </div>
 
@@ -36,11 +35,11 @@
 
         <div class="form-group">
           <label>Ano do Modelo</label>
-          <input type="text" v-model="anuncio.anoModelo" placeholder="Digite o ano do modelo" @input="validateNumberInput('anoModelo'), validarAno('anoModelo')" />
+          <input type="text" v-model="anuncio.anoModelo" placeholder="Digite o ano do modelo" @input="validarAno('anoModelo')" />
         </div>
         <div class="form-group">
           <label>Ano de Fabricação</label>
-          <input type="text" v-model="anuncio.anoFabricacao" placeholder="Digite o ano de fabricação" @input="validateNumberInput('anoFabricacao'), validarAno('anoFabricacao')" />
+          <input type="text" v-model="anuncio.anoFabricacao" placeholder="Digite o ano de fabricação" @input="validarAno('anoFabricacao')" />
         </div>
         <div class="form-group">
           <label>Quilometragem (km)</label>
@@ -50,11 +49,22 @@
           <label>Cor</label>
           <select v-model="anuncio.cor">
             <option value="">Escolha uma cor</option>
-            <option>Preto</option>
+            <option>Amarelo</option>
+            <option>Azul</option>
+            <option>Bege</option>
             <option>Branco</option>
-            <option>Vermelho</option>
-            <option>Prata</option>
             <option>Cinza</option>
+            <option>Dourado</option>
+            <option>Grená</option>
+            <option>Laranja</option>
+            <option>Marrom</option>
+            <option>Prata</option>
+            <option>Preto</option>
+            <option>Rosa</option>
+            <option>Roxo</option>
+            <option>Verde</option>
+            <option>Vermelho</option>
+            <option>Fantasia</option>
           </select>
         </div>
         <div class="form-group">
@@ -73,6 +83,9 @@
             <option>SUV</option>
             <option>Picape</option>
             <option>Hatch</option>
+            <option>Esportivo</option>
+            <option>MiniVan</option>
+            <option>Moto</option>
           </select>
         </div>
         <div class="form-group">
@@ -106,10 +119,10 @@
       <h3>Atualize os opcionais do veículo</h3>
       <div class="opcionais">
         <div
-          v-for="opcional in opcionais"
-          :key="opcional"
-          class="opcional"
-          :class="{ active: anuncio.opcionais.includes(opcional) }"
+          v-for="opcional in opcionais" 
+          :key="opcional" 
+          class="opcional" 
+          :class="{ active: anuncio.opcionais.includes(opcional) }" 
           @click="toggleOpcional(opcional)"
         >
           {{ opcional }}
@@ -212,7 +225,6 @@ export default {
     this.carregarAnuncio();
   },
   methods: {
-
     adicionarImagem() {
       this.anuncio.imagens.push("");
     },
@@ -221,14 +233,14 @@ export default {
     },
 
     async carregarMarcas() {
-    try {
-      const response = await axios.get(
-        `https://parallelum.com.br/fipe/api/v1/${this.tipoVeiculo}/marcas`
-      );
-      this.marcas = response.data;
-    } catch (error) {
-      console.error("Erro ao carregar marcas:", error);
-    }
+      try {
+        const response = await axios.get(
+          `https://parallelum.com.br/fipe/api/v1/${this.tipoVeiculo}/marcas`
+        );
+        this.marcas = response.data;
+      } catch (error) {
+        console.error("Erro ao carregar marcas:", error);
+      }
     },
 
     async carregarModelos() {
@@ -243,81 +255,74 @@ export default {
       }
     },
 
-
-    validateNumberInput(field) {
-      this.anuncio[field] = this.anuncio[field].replace(/\D/g, '');
-    },
-
     formatarValor() {
-    if (this.anuncio.valor) {
-      let numeroLimpo = this.anuncio.valor.replace(/\D/g, "");
+      if (this.anuncio.valor) {
+        let numeroLimpo = this.anuncio.valor.replace(/\D/g, "");
 
-      if (!numeroLimpo) {
-        this.anuncio.valor = "";
-        return;
+        if (!numeroLimpo) {
+          this.anuncio.valor = "";
+          return;
+        }
+
+        const valorFormatado = new Intl.NumberFormat("pt-BR", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }).format(parseFloat(numeroLimpo) / 100);
+
+        this.anuncio.valor = valorFormatado;
       }
-
-      const valorFormatado = new Intl.NumberFormat("pt-BR", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }).format(parseFloat(numeroLimpo) / 100);
-
-      this.anuncio.valor = valorFormatado;
-    }
     },
 
     validarAno(campo) {
-    // Remove qualquer caractere que não seja número
-    this.anuncio[campo] = this.anuncio[campo].replace(/\D/g, '');
+      // Remove qualquer caractere que não seja número
+      this.anuncio[campo] = this.anuncio[campo].replace(/\D/g, '');
 
-    // Limita a entrada para no máximo 4 dígitos
-    if (this.anuncio[campo].length > 4) {
-      this.anuncio[campo] = this.anuncio[campo].slice(0, 4);
-    }
+      // Limita a entrada para no máximo 4 dígitos
+      if (this.anuncio[campo].length > 4) {
+        this.anuncio[campo] = this.anuncio[campo].slice(0, 4);
+      }
+    },
+    formatarKm() {
+      // Remove qualquer caractere que não seja número
+      const numeroLimpo = this.anuncio.km.replace(/\D/g, "");
 
-    
-  },
-  formatarKm() {
-  // Remove qualquer caractere que não seja número
-  const numeroLimpo = this.anuncio.km.replace(/\D/g, "");
+      // Se o campo estiver vazio, define como string vazia
+      if (!numeroLimpo) {
+        this.anuncio.km = "";
+        return;
+      }
 
-  // Se o campo estiver vazio, define como string vazia
-  if (!numeroLimpo) {
-    this.anuncio.km = "";
-    return;
-  }
+      // Formata o número com separadores de milhar
+      const kmFormatado = new Intl.NumberFormat("pt-BR").format(parseInt(numeroLimpo));
+      this.anuncio.km = kmFormatado;
+    },
 
-  // Formata o número com separadores de milhar
-  const kmFormatado = new Intl.NumberFormat("pt-BR").format(parseInt(numeroLimpo));
-  this.anuncio.km = kmFormatado;
-},
+    avancarEtapa() {
+      if (this.etapa === 1) {
+        // Validação do ano antes de avançar
+        const anoMinimo = 1886;
+        const anoAtual = new Date().getFullYear();
+        const anoFabricacao = parseInt(this.anuncio.anoFabricacao);
+        const anoModelo = parseInt(this.anuncio.anoModelo);
 
-avancarEtapa() {
-  if (this.etapa === 1) {
-    // Validação do ano antes de avançar
-    const anoMinimo = 1886;
-    const anoAtual = new Date().getFullYear();
-    const anoFabricacao = parseInt(this.anuncio.anoFabricacao);
-    const anoModelo = parseInt(this.anuncio.anoModelo);
-
-    if (isNaN(anoFabricacao) ||  anoFabricacao < anoMinimo || anoFabricacao > anoAtual) {
-      alert(`Ano de fabricação inválido. O ano de fabricação do modelo deve estar entre ${anoMinimo} e ${anoAtual}.`);
-      return;
-    }
-
-    if (isNaN(anoModelo) || anoModelo < anoFabricacao || anoModelo > anoFabricacao + 1) {
-      alert("O ano do modelo deve ser igual ou no máximo 1 ano a mais que o ano de fabricação.");
-      return;
-    }
-
-    if (!this.anuncio.marca || !this.anuncio.modelo || !this.anuncio.valor || !this.anuncio.anoModelo || !this.anuncio.anoFabricacao) {
-          alert("Por favor, preencha todos os campos obrigatórios.");
+        if (isNaN(anoFabricacao) ||  anoFabricacao < anoMinimo || anoFabricacao > anoAtual) {
+          alert(`Ano de fabricação inválido. O ano de fabricação do modelo deve estar entre ${anoMinimo} e ${anoAtual}.`);
           return;
         }
-  }
 
-  if (this.etapa < 3) this.etapa++;
-},
+        if (isNaN(anoModelo) || anoModelo < anoFabricacao || anoModelo > anoFabricacao + 1) {
+          alert("O ano do modelo deve ser igual ou no máximo 1 ano a mais que o ano de fabricação.");
+          return;
+        }
+
+        if (!this.anuncio.marca || !this.anuncio.modelo || !this.anuncio.valor || !this.anuncio.anoModelo || !this.anuncio.anoFabricacao) {
+              alert("Por favor, preencha todos os campos obrigatórios.");
+              return;
+            }
+      }
+
+      if (this.etapa < 3) this.etapa++;
+    },
     voltarEtapa() {
       if (this.etapa > 1) this.etapa--;
     },
