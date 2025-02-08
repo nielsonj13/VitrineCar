@@ -104,7 +104,7 @@ export default {
           alert("Por favor, verifique seu e-mail antes de fazer login.");
         }
       } catch (error) {
-        alert("Erro ao fazer login: " + error.message);
+        alert("Senha ou email inválidos, por favor tente novamente.");
         console.error(error);
       }
     },
