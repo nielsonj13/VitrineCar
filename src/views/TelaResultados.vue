@@ -317,6 +317,15 @@ export default {
         // Atualiza os resultados da busca
         this.anuncios = anunciosFiltrados;
 
+        // Atualizar favoritos corretamente após os filtros serem aplicados
+        const favoritos = await FavoritosService.getFavoritos();
+        const favoritosMap = new Set(favoritos.map(fav => fav.id));
+
+        this.anuncios = this.anuncios.map((anuncio) => ({
+          ...anuncio,
+          favorito: favoritosMap.has(anuncio.id),
+        }));
+
       } catch (error) {
         console.error("Erro ao filtrar veículos:", error);
         alert("Erro ao buscar os veículos. Tente novamente.");
