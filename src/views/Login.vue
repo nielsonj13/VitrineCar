@@ -43,17 +43,17 @@
 
             <button type="submit" class="btn btn-primary">Entrar</button>
 
-            <div class="text-center mt-3  links-container">
+            <div class="text-center mt-3 links-container">
               <router-link to="/esqueceu-senha">Esqueceu a senha?</router-link>
               <router-link to="/cadastro">Cadastre-se</router-link>
               <router-link to="/verificar-email">Reenviar e-mail de verificação</router-link>
             </div>
-            <!-- Botão de voltar no final do container -->
-          <button type="button" class="btn-link-secondary voltar-btn" @click="voltarParaPrincipal">
-            ← Voltar para a Tela Principal
-          </button>
+
+            <!-- Botão de voltar para a tela principal -->
+            <button type="button" class="btn-link-secondary voltar-btn" @click="voltarParaPrincipal">
+              ← Voltar para a Tela Principal
+            </button>
           </form>
-          
         </div>
       </div>
     </div>
@@ -108,6 +108,10 @@ export default {
         console.error(error);
       }
     },
+
+    voltarParaPrincipal() {
+      this.$router.push("/"); // Redireciona para a tela inicial
+    }
   },
 };
 </script>
@@ -159,7 +163,7 @@ export default {
   flex-direction: column;
   justify-content: center;
   background-color: white;
-  position: relative; /* Necessário para que o botão absoluto funcione corretamente */
+  position: relative;
   padding-bottom: 40px;
 }
 
@@ -215,25 +219,12 @@ export default {
   background: #3a1e66;
 }
 
-/* Novo botão menor e discreto */
-.btn-link-secondary {
-  background: none;
-  border: none;
-  color: #6c757d;
-  font-size: 14px;
-  cursor: pointer;
-  text-decoration: none;
-  display: block;
-  text-align: center;
-  margin-top: 10px;
-  margin-top: auto; /* Faz o botão ficar no final */
-}
-
+/* Botão de voltar para a tela principal */
 .voltar-btn {
   position: absolute;
-  bottom: 10px; /* Mantém o botão fixo na parte inferior */
+  bottom: 10px;
   left: 50%;
-  transform: translateX(-50%); /* Centraliza o botão */
+  transform: translateX(-50%);
   background: none;
   border: none;
   color: #6c757d;
@@ -249,20 +240,15 @@ export default {
 
 .login-logo {
   display: block;
-  max-width: 250px; /* Define um tamanho máximo para a logo */
-  margin: 0 auto 15px auto; /* Centraliza a logo e adiciona espaçamento abaixo */
-}
-
-.btn-link-secondary:hover {
-  color: #343a40;
-  text-decoration: underline;
+  max-width: 250px;
+  margin: 0 auto 15px auto;
 }
 
 .links-container {
   display: flex;
   flex-direction: column;
-  align-items: center; /* Centraliza os links */
-  gap: 5px; /* Espaçamento entre os links */
+  align-items: center;
+  gap: 5px;
 }
 
 .links-container a {
@@ -272,16 +258,6 @@ export default {
 }
 
 .links-container a:hover {
-  text-decoration: underline;
-}
-
-.text-center a {
-  color: #5B3199;
-  text-decoration: none;
-  margin-right: 15px;
-}
-
-.text-center a:hover {
   text-decoration: underline;
 }
 </style>
