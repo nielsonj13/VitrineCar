@@ -158,6 +158,7 @@ export default {
         this.atualizarMiniaturas();
       } else {
         this.imagemSelecionada = 0; // Volta para a primeira imagem
+        this.atualizarMiniaturas();
       }
     },
     anteriorImagem() {
@@ -166,6 +167,7 @@ export default {
         this.atualizarMiniaturas();
       } else {
         this.imagemSelecionada = this.veiculo.imagens.length - 1; // Volta para a última imagem
+        this.atualizarMiniaturas();
       }
     },
     atualizarMiniaturas() {
@@ -578,6 +580,10 @@ i {
 
   .seller-name {
     font-size: 24px;
+  }
+  .contact-info p {
+    font-size: 18px; 
+    display: block;
   }
 }
 </style>
