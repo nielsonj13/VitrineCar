@@ -25,16 +25,21 @@
             />
           </div>
 
-          <div class="mb-3">
+          <div class="mb-3 password-container">
             <label for="password">Senha</label>
-            <input 
-              type="password" 
-              v-model="password" 
-              id="password" 
-              class="form-control" 
-              placeholder="Digite sua senha" 
-              required 
-            />
+            <div class="input-group">
+              <input 
+                :type="mostrarSenha ? 'text' : 'password'" 
+                v-model="password" 
+                id="password" 
+                class="form-control" 
+                placeholder="Digite sua senha" 
+                required 
+              />
+              <button type="button" class="toggle-password" @click="mostrarSenha = !mostrarSenha">
+                <i :class="mostrarSenha ? 'bi bi-eye-slash-fill' : 'bi bi-eye-fill'"></i>
+              </button>
+            </div>
           </div>
 
           <button type="submit" class="btn btn-primary" :disabled="enviando">
@@ -59,6 +64,7 @@ export default {
     return {
       email: "",
       password: "",
+      mostrarSenha: false,
       enviando: false,
     };
   },
@@ -98,110 +104,118 @@ export default {
   },
 };
 </script>
-  
-  <style scoped>
-  /* Fundo da tela */
-  .verify-email-background {
-    background-color: #f3f3f3;
-    height: calc(100vh - 60px);
+
+<style scoped>
+/* Fundo da tela */
+.verify-email-background {
+  background-color: #f3f3f3;
+  height: calc(100vh - 60px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Card de verificação */
+.verify-email-container {
+  width: 95vw;
+  max-width: 1400px;
+  height: 85vh;
+  max-height: 700px;
+  background: #fff;
+  border-radius: 15px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  display: flex;
+}
+
+/* Área da imagem */
+.image-section {
+  flex: 1;
+  background: url('/logos/imagem_login.png') no-repeat center center;
+  background-size: cover;
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .image-section {
     display: flex;
     align-items: center;
     justify-content: center;
   }
-  
-  /* Card de verificação */
-  .verify-email-container {
-    width: 95vw;
-    max-width: 1400px;
-    height: 85vh;
-    max-height: 700px;
-    background: #fff;
-    border-radius: 15px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    display: flex;
-  }
-  
-  /* Área da imagem */
-  .image-section {
-    flex: 1;
-    background: url('/logos/imagem_login.png') no-repeat center center;
-    background-size: cover;
-    display: none;
-  }
-  
-  @media (min-width: 768px) {
-    .image-section {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-  }
-  
-  /* Formulário de verificação */
-  .verify-section {
-    flex: 1;
-    padding: 40px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    background-color: white;
-  }
-  
-  .verify-logo {
-    display: block;
-    max-width: 250px;
-    margin: 0 auto 15px auto;
-  }
-  
-  .verify-section h2 {
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 10px;
-    color: #343a40;
-  }
-  
-  .verify-text {
-    text-align: center;
-    margin-bottom: 20px;
-    color: #6c757d;
-  }
-  
-  .form-control {
-    padding: 12px;
-    font-size: 16px;
-    width: 100%;
-  }
-  
-  .btn-primary {
-    background: #5B3199;
-    border: none;
-    transition: all 0.3s;
-    width: 100%;
-    padding: 10px;
-  }
-  
-  .btn-primary:hover {
-    background: #3a1e66;
-  }
-  
-  /* Botão discreto para voltar */
-  .voltar-btn {
-    position: absolute;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: none;
-    border: none;
-    color: #6c757d;
-    font-size: 14px;
-    cursor: pointer;
-    text-decoration: none;
-  }
-  .text-center a {
-    color: #5B3199;
-    text-decoration: none;
-    margin-top: 10px;
 }
-  </style>
-  
+
+/* Formulário de verificação */
+.verify-section {
+  flex: 1;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background-color: white;
+}
+
+.verify-logo {
+  display: block;
+  max-width: 250px;
+  margin: 0 auto 15px auto;
+}
+
+.verify-section h2 {
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 10px;
+  color: #343a40;
+}
+
+.verify-text {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #6c757d;
+}
+
+.form-control {
+  padding: 12px;
+  font-size: 16px;
+  width: 100%;
+}
+
+.input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: #5B3199;
+}
+
+.toggle-password:hover {
+  color: #3a1e66;
+}
+
+.btn-primary {
+  background: #5B3199;
+  border: none;
+  transition: all 0.3s;
+  width: 100%;
+  padding: 10px;
+}
+
+.btn-primary:hover {
+  background: #3a1e66;
+}
+
+.text-center a {
+  color: #5B3199;
+  text-decoration: none;
+  margin-top: 10px;
+}
+</style>
