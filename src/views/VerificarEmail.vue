@@ -1,103 +1,103 @@
 <template>
-    <div class="container verify-email-background">
-      <div class="row verify-email-container">
-        <!-- Área da imagem -->
-        <div class="col-md-6 image-section"></div>
-  
-        <!-- Área de verificação -->
-        <div class="col-md-6 verify-section">
-          <img src="/public/logos/logo_vitrinecar.png" alt="VitrineCar" class="verify-logo">
-          <h2>Verifique seu e-mail</h2>
-          <p class="verify-text">
-            Informe seu e-mail e senha para receber um novo link de verificação.
-          </p>
-  
-          <form @submit.prevent="reenviarEmailVerificacao">
-            <div class="mb-3">
-              <label for="email">Email</label>
-              <input 
-                type="email" 
-                v-model="email" 
-                id="email" 
-                class="form-control" 
-                placeholder="user@exemplo.com" 
-                required 
-              />
-            </div>
-  
-            <div class="mb-3">
-              <label for="password">Senha</label>
-              <input 
-                type="password" 
-                v-model="password" 
-                id="password" 
-                class="form-control" 
-                placeholder="Digite sua senha" 
-                required 
-              />
-            </div>
-  
-            <button type="submit" class="btn btn-primary" :disabled="enviando">
-              {{ enviando ? "Enviando..." : "Reenviar Verificação" }}
-            </button>
-  
-            <div class="text-center mt-3">
-              <router-link to="/login">Voltar para Login</router-link>
-            </div>
-          </form>
-        </div>
+  <div class="container verify-email-background">
+    <div class="row verify-email-container">
+      <!-- Área da imagem -->
+      <div class="col-md-6 image-section"></div>
+
+      <!-- Área de verificação -->
+      <div class="col-md-6 verify-section">
+        <img src="/public/logos/logo_vitrinecar.png" alt="VitrineCar" class="verify-logo">
+        <h2>Verifique seu e-mail</h2>
+        <p class="verify-text">
+          Informe seu e-mail e senha para receber um novo link de verificação.
+        </p>
+
+        <form @submit.prevent="reenviarEmailVerificacao">
+          <div class="mb-3">
+            <label for="email">Email</label>
+            <input 
+              type="email" 
+              v-model="email" 
+              id="email" 
+              class="form-control" 
+              placeholder="user@exemplo.com" 
+              required 
+            />
+          </div>
+
+          <div class="mb-3">
+            <label for="password">Senha</label>
+            <input 
+              type="password" 
+              v-model="password" 
+              id="password" 
+              class="form-control" 
+              placeholder="Digite sua senha" 
+              required 
+            />
+          </div>
+
+          <button type="submit" class="btn btn-primary" :disabled="enviando">
+            {{ enviando ? "Enviando..." : "Reenviar Verificação" }}
+          </button>
+
+          <div class="text-center mt-3">
+            <router-link to="/login">Voltar para Login</router-link>
+          </div>
+        </form>
       </div>
     </div>
-  </template>
-  
-  <script>
-  import { getAuth, signInWithEmailAndPassword, sendEmailVerification, signOut } from "firebase/auth";
-  
-  export default {
-    name: "VerificarEmail",
-    data() {
-      return {
-        email: "",
-        password: "",
-        enviando: false,
-      };
-    },
-    methods: {
-      async reenviarEmailVerificacao() {
-        try {
-          this.enviando = true;
-          const auth = getAuth();
-  
-          // Tenta autenticar o usuário para verificar se a conta existe
-          const userCredential = await signInWithEmailAndPassword(auth, this.email, this.password);
-          const user = userCredential.user;
-  
-          // Se o e-mail já estiver verificado, informa ao usuário
-          if (user.emailVerified) {
-            alert("Seu e-mail já está verificado. Você pode fazer login normalmente.");
-            this.enviando = false;
-            return;
-          }
-  
-          // Se não estiver verificado, envia um novo link de verificação
-          await sendEmailVerification(user);
-          alert("Um novo e-mail de verificação foi enviado! Verifique sua caixa de entrada.");
-  
-          // Desloga o usuário imediatamente para evitar login antes da verificação
-          await signOut(auth);
-        } catch (error) {
-          alert("Erro ao reenviar o e-mail de verificação: " + error.message);
-          console.error(error);
-        } finally {
+  </div>
+</template>
+
+<script>
+import { getAuth, signInWithEmailAndPassword, sendEmailVerification, signOut } from "firebase/auth";
+
+export default {
+  name: "VerificarEmail",
+  data() {
+    return {
+      email: "",
+      password: "",
+      enviando: false,
+    };
+  },
+  methods: {
+    async reenviarEmailVerificacao() {
+      try {
+        this.enviando = true;
+        const auth = getAuth();
+
+        // Tenta autenticar o usuário para verificar se a conta existe
+        const userCredential = await signInWithEmailAndPassword(auth, this.email, this.password);
+        const user = userCredential.user;
+
+        // Se o e-mail já estiver verificado, informa ao usuário
+        if (user.emailVerified) {
+          alert("Seu e-mail já está verificado. Você pode fazer login normalmente.");
           this.enviando = false;
+          return;
         }
-      },
-      voltarParaLogin() {
-        this.$router.push('/login');
+
+        // Se não estiver verificado, envia um novo link de verificação
+        await sendEmailVerification(user);
+        alert("Um novo e-mail de verificação foi enviado! Verifique sua caixa de entrada.");
+
+        // Desloga o usuário imediatamente para evitar login antes da verificação
+        await signOut(auth);
+      } catch (error) {
+        alert("Senha ou email inválidos, por favor tente novamente.");
+        console.error(error);
+      } finally {
+        this.enviando = false;
       }
     },
-  };
-  </script>
+    voltarParaLogin() {
+      this.$router.push('/login');
+    }
+  },
+};
+</script>
   
   <style scoped>
   /* Fundo da tela */
