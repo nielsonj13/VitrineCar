@@ -33,7 +33,7 @@
             <option value="200000">Acima de 150.000 km</option>
           </select>
           <input type="text" v-model="filtros.valor" @input="formatarValor" placeholder="Valor Máximo">
-          <input v-model="filtros.ano" placeholder="Ano Mínimo">
+          <input type="text" v-model="filtros.ano" @input="formatarAno" placeholder="Ano Mínimo">
           <button class="btn-filtrar" @click="aplicarFiltros">Filtrar</button>
         </div>
 
@@ -135,87 +135,91 @@ export default {
     },
       
     async carregarResultados() {
-  try {
-    const query = this.$route.query;
-    this.termo = query.termo || "";
-    this.filtros = {
-      cidade: query.cidade || "",
-      estado: query.estado || "",
-      km: query.km || "",
-      valor: query.valor || "",
-      ano: query.ano || "",
-    };
+      try {
+        const query = this.$route.query;
+        this.termo = query.termo || "";
+        this.filtros = {
+          cidade: query.cidade || "",
+          estado: query.estado || "",
+          km: query.km || "",
+          valor: query.valor || "",
+          ano: query.ano || "",
+        };
 
-    const termoNormalizado = this.termo.trim().toLowerCase();
-    
-    // Busca inicial dos anúncios
-    const resultadosMarca = await this.daoService.searchByField("marca", termoNormalizado);
-    const resultadosCategoria = await this.daoService.searchByField("categoria", termoNormalizado);
-    const todosAnuncios = await this.daoService.getAll();
+        const termoNormalizado = this.termo.trim().toLowerCase();
+        
+        // Busca inicial dos anúncios
+        const resultadosCategoria = await this.daoService.searchByField("categoria", termoNormalizado);
+        const todosAnuncios = await this.daoService.getAll();
 
-    // Filtra modelos que contenham parte do termo pesquisado
-    const resultadosModelo = todosAnuncios.filter((anuncio) => {
-      const palavrasModelo = anuncio.modelo.toLowerCase().split(" ");
-      return palavrasModelo.some((palavra) => palavra.includes(termoNormalizado));
-    });
+        // Filtra modelos que contenham parte do termo pesquisado
+        const resultadosMarca = todosAnuncios.filter((anuncio) => {
+          const palavrasMarca = anuncio.marca.toLowerCase().split(" ");
+          return palavrasMarca.some((palavra) => palavra.includes(termoNormalizado));
+        });
 
-    // Remove duplicatas dos resultados
-    let todosResultados = [...resultadosMarca, ...resultadosCategoria, ...resultadosModelo];
-    todosResultados = todosResultados.filter(
-      (item, index, self) => self.findIndex((v) => v.id === item.id) === index
-    );
+        const resultadosModelo = todosAnuncios.filter((anuncio) => {
+          const palavrasModelo = anuncio.modelo.toLowerCase().split(" ");
+          return palavrasModelo.some((palavra) => palavra.includes(termoNormalizado));
+        });
 
-    // Obter IDs únicos dos vendedores
-    const userIds = [...new Set(todosResultados.map((anuncio) => anuncio.userId))];
+        // Remove duplicatas dos resultados
+        let todosResultados = [...resultadosMarca, ...resultadosCategoria, ...resultadosModelo];
+        todosResultados = todosResultados.filter(
+          (item, index, self) => self.findIndex((v) => v.id === item.id) === index
+        );
 
-    // Buscar informações dos vendedores em uma única chamada
-    const userDocs = await Promise.all(userIds.map(async (id) => {
-      const userRef = doc(db, "usuarios", id);
-      const userSnap = await getDoc(userRef);
-      return userSnap.exists() ? { id, ...userSnap.data() } : null;
-    }));
+        // Obter IDs únicos dos vendedores
+        const userIds = [...new Set(todosResultados.map((anuncio) => anuncio.userId))];
 
-    // Criar um mapa de usuários para acesso rápido
-    const userMap = userDocs.reduce((map, user) => {
-      if (user) {
-        map[user.id] = user;
+        // Buscar informações dos vendedores em uma única chamada
+        const userDocs = await Promise.all(userIds.map(async (id) => {
+          const userRef = doc(db, "usuarios", id);
+          const userSnap = await getDoc(userRef);
+          return userSnap.exists() ? { id, ...userSnap.data() } : null;
+        }));
+
+        // Criar um mapa de usuários para acesso rápido
+        const userMap = userDocs.reduce((map, user) => {
+          if (user) {
+            map[user.id] = user;
+          }
+          return map;
+        }, {});
+
+        // Adicionar cidade e estado aos anúncios
+        todosResultados = todosResultados.map(anuncio => ({
+          ...anuncio,
+          cidade: userMap[anuncio.userId]?.endereco?.cidade || "",
+          estado: userMap[anuncio.userId]?.endereco?.estado || "",
+        }));
+
+        // Aplicar filtros avançados
+        this.anuncios = todosResultados.filter((anuncio) => {
+          return (
+            (!this.filtros.cidade || anuncio.cidade.toLowerCase().includes(this.filtros.cidade.toLowerCase())) &&
+            (!this.filtros.estado || anuncio.estado.toLowerCase().includes(this.filtros.estado.toLowerCase())) &&
+            (!this.filtros.km || Number(anuncio.km) <= Number(this.filtros.km)) &&
+            (!this.filtros.valor || Number(anuncio.valor) <= Number(this.filtros.valor)) &&
+            (!this.filtros.ano || Number(anuncio.anoModelo) >= Number(this.filtros.ano))
+          );
+        });
+
+        // Buscar favoritos em uma única chamada
+        const favoritos = await FavoritosService.getFavoritos();
+        const favoritosMap = new Set(favoritos.map(fav => fav.id));
+
+        this.anuncios = this.anuncios.map((anuncio) => ({
+          ...anuncio,
+          favorito: favoritosMap.has(anuncio.id),
+        }));
+
+        this.anunciosFiltrados = this.anuncios;
+      } catch (error) {
+        console.error("Erro ao buscar veículos:", error);
+        alert("Erro ao buscar os veículos. Tente novamente.");
       }
-      return map;
-    }, {});
-
-    // Adicionar cidade e estado aos anúncios
-    todosResultados = todosResultados.map(anuncio => ({
-      ...anuncio,
-      cidade: userMap[anuncio.userId]?.endereco?.cidade || "",
-      estado: userMap[anuncio.userId]?.endereco?.estado || "",
-    }));
-
-    // Aplicar filtros avançados
-    this.anuncios = todosResultados.filter((anuncio) => {
-      return (
-        (!this.filtros.cidade || anuncio.cidade.toLowerCase().includes(this.filtros.cidade.toLowerCase())) &&
-        (!this.filtros.estado || anuncio.estado.toLowerCase().includes(this.filtros.estado.toLowerCase())) &&
-        (!this.filtros.km || Number(anuncio.km) <= Number(this.filtros.km)) &&
-        (!this.filtros.valor || Number(anuncio.valor) <= Number(this.filtros.valor)) &&
-        (!this.filtros.ano || Number(anuncio.anoModelo) >= Number(this.filtros.ano))
-      );
-    });
-
-    // Buscar favoritos em uma única chamada
-    const favoritos = await FavoritosService.getFavoritos();
-    const favoritosMap = new Set(favoritos.map(fav => fav.id));
-
-    this.anuncios = this.anuncios.map((anuncio) => ({
-      ...anuncio,
-      favorito: favoritosMap.has(anuncio.id),
-    }));
-
-    this.anunciosFiltrados = this.anuncios;
-  } catch (error) {
-    console.error("Erro ao buscar veículos:", error);
-    alert("Erro ao buscar os veículos. Tente novamente.");
-  }
-},
+    },
     async carregarEstados() {
       try {
         const response = await axios.get("https://servicodados.ibge.gov.br/api/v1/localidades/estados");
@@ -240,8 +244,13 @@ export default {
         let anunciosFiltrados = await this.daoService.getAll();
 
         // Filtra por Marca, Categoria e Modelos
-        const resultadosMarca = await this.daoService.searchByField("marca", termoNormalizado);
-        const resultadosCategoria = await this.daoService.searchByField("categoria", termoNormalizado);
+        const resultadosCategoria = anunciosFiltrados.filter((anuncio) => 
+          anuncio.categoria.toLowerCase().includes(termoNormalizado)
+        );
+        const resultadosMarca = anunciosFiltrados.filter((anuncio) => {
+          const palavrasMarca = anuncio.marca.toLowerCase().split(" ");
+          return palavrasMarca.some((palavra) => palavra.includes(termoNormalizado));
+        });
         const resultadosModelo = anunciosFiltrados.filter((anuncio) => {
           const palavrasModelo = anuncio.modelo.toLowerCase().split(" ");
           return palavrasModelo.some((palavra) => palavra.includes(termoNormalizado));
@@ -336,7 +345,14 @@ export default {
       }
     },
 
-    // **Função para remover pontos e vírgulas e converter para número**
+    formatarAno(){
+      this.filtros.ano = this.filtros.ano.replace(/\D/g, '');
+
+      if(this.filtros.ano.length > 4){
+        this.filtros.ano = this.filtros.ano.slice(0, 4);
+      }
+    },
+
     limparNumero(valor) {
       return parseInt(valor.replace(/[.,]/g, ""), 10) || 0;
     },
