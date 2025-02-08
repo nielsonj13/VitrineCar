@@ -46,7 +46,7 @@
             <div class="text-center mt-3 links-container">
               <router-link to="/esqueceu-senha">Esqueceu a senha?</router-link>
               <router-link to="/cadastro">Cadastre-se</router-link>
-              <router-link to="/verificar-email">Reenviar e-mail de verificação</router-link>
+              <router-link to="/verificar-email">Conta Antiga? Verifique o Email Agora!</router-link>
             </div>
 
             <!-- Botão de voltar para a tela principal -->
