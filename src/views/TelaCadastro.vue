@@ -7,11 +7,6 @@
         <div class="col-md-6 form-section">
           <h2>Crie sua conta</h2>
 
-          <!-- Exibe mensagens de erro -->
-          <div v-if="mensagemErro">
-            <p>{{ mensagemErro }}</p>
-          </div>
-
           <form @submit.prevent="handleCadastro">
             <div class="mb-3">
               <label for="email">Email</label>
@@ -49,28 +44,38 @@
               />
             </div>
 
-            <div class="mb-3">
+            <div class="mb-3 password-container">
               <label for="senha">Senha</label>
-              <input 
-                type="password" 
-                v-model="senha" 
-                id="senha" 
-                class="form-control" 
-                placeholder="Digite sua senha" 
-                required 
-              />
+              <div class="input-group">
+                <input 
+                  :type="mostrarSenha ? 'text' : 'password'" 
+                  v-model="senha" 
+                  id="senha" 
+                  class="form-control" 
+                  placeholder="Digite sua senha" 
+                  required 
+                />
+                <button type="button" class="toggle-password" @click="mostrarSenha = !mostrarSenha">
+                  <i :class="mostrarSenha ? 'bi bi-eye-slash-fill' : 'bi bi-eye-fill'"></i>
+                </button>
+              </div>
             </div>
 
-            <div class="mb-3">
+            <div class="mb-3 password-container">
               <label for="confirmar-senha">Confirmar Senha</label>
-              <input 
-                type="password" 
-                v-model="confirmarSenha" 
-                id="confirmar-senha" 
-                class="form-control" 
-                placeholder="Confirme sua senha" 
-                required 
-              />
+              <div class="input-group">
+                <input 
+                  :type="mostrarConfirmarSenha ? 'text' : 'password'" 
+                  v-model="confirmarSenha" 
+                  id="confirmar-senha" 
+                  class="form-control" 
+                  placeholder="Confirme sua senha" 
+                  required 
+                />
+                <button type="button" class="toggle-password" @click="mostrarConfirmarSenha = !mostrarConfirmarSenha">
+                  <i :class="mostrarConfirmarSenha ? 'bi bi-eye-slash-fill' : 'bi bi-eye-fill'"></i>
+                </button>
+              </div>
             </div>
 
             <button type="submit" class="btn btn-primary" :disabled="verificandoEmail">
@@ -89,8 +94,6 @@
 
 <script>
 import { getAuth, createUserWithEmailAndPassword, updateProfile, sendEmailVerification, signOut } from "firebase/auth";
-import { db } from "@/firebase";
-import { doc, setDoc } from "firebase/firestore";
 
 export default {
   name: "TelaCadastro",
@@ -102,20 +105,19 @@ export default {
       senha: "",
       confirmarSenha: "",
       verificandoEmail: false,
-      mensagemErro: "", // Armazena mensagens de erro
+      mostrarSenha: false,
+      mostrarConfirmarSenha: false,
     };
   },
   methods: {
     async handleCadastro() {
       try {
-        this.mensagemErro = ""; // Limpa mensagens anteriores
-
         if (!this.email || !this.nome || !this.sobrenome || !this.senha || !this.confirmarSenha) {
-          this.mensagemErro = "Preencha todos os campos obrigatórios.";
+          alert("⚠️ Preencha todos os campos obrigatórios!");
           return;
         }
         if (this.senha !== this.confirmarSenha) {
-          this.mensagemErro = "As senhas digitadas não coincidem. Verifique e tente novamente.";
+          alert("❌ As senhas digitadas não coincidem. Verifique e tente novamente.");
           return;
         }
 
@@ -128,7 +130,7 @@ export default {
         });
 
         await sendEmailVerification(user);
-        alert("Cadastro realizado com sucesso! Verifique seu e-mail para ativar a conta.");
+        alert("✅ Cadastro realizado com sucesso! Verifique seu e-mail para ativar a conta.");
 
         await signOut(auth);
         this.$router.push("/login");
@@ -141,19 +143,18 @@ export default {
     tratarErros(error) {
       switch (error.code) {
         case "auth/email-already-in-use":
-          this.mensagemErro = "Este e-mail já está cadastrado. Tente fazer login ou use outro e-mail.";
+          alert(" Este e-mail já está cadastrado. Tente fazer login ou use outro e-mail.");
           break;
         case "auth/weak-password":
-          this.mensagemErro = "A senha deve ter pelo menos 6 caracteres.";
+          alert(" A senha deve ter pelo menos 6 caracteres.");
           break;
         default:
-          this.mensagemErro = "Erro ao cadastrar. Verifique os dados e tente novamente.";
+          alert(" Erro ao cadastrar. Verifique os dados e tente novamente.");
       }
     }
   }
 };
 </script>
-
 
 <style scoped>
 /* Fundo da tela */
@@ -176,7 +177,6 @@ export default {
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   display: flex;
-  
 }
 
 /* Área da imagem */
@@ -217,6 +217,33 @@ export default {
   font-size: 16px;
 }
 
+/* Ajustando o botão de alternar senha */
+.password-container {
+  position: relative;
+}
+
+.input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: #5B3199;
+}
+
+.toggle-password:hover {
+  color: #3a1e66;
+}
+
 .btn-primary {
   background: #5B3199;
   border: none;
@@ -241,7 +268,7 @@ export default {
 
 .logo {
   display: block;
-  max-width: 250px; /* Define um tamanho máximo para a logo */
-  margin: 0 auto 15px auto; /* Centraliza a logo e adiciona espaçamento abaixo */
+  max-width: 250px;
+  margin: 0 auto 15px auto;
 }
 </style>
