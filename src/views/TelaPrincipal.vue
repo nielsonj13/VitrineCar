@@ -3,7 +3,6 @@
     <Navbar />
 
     <!-- Área de Busca -->
-    <!-- Área de Busca -->
     <div class="search-container">
       <h2>Procure seu Veículo!</h2>
       <div class="search-bar input-group">
@@ -42,7 +41,7 @@
               :src="categoria.img" 
               :alt="categoria.nome" 
               class="img-fluid"
-              @click="filtrarCategoria(categoria.nome)"
+              @click="buscarOfertas(categoria.nome)"
             />
             <p class="category-name">{{ categoria.nome }}</p>
           </div>
@@ -81,9 +80,6 @@ export default {
   methods: {
     buscarOfertas(termo) {
         this.$router.push({ name: "TelaResultados", query: { termo: termo.trim().toLowerCase() } });
-    },
-    filtrarCategoria(categoria) {
-      this.$router.push({ name: "TelaResultados", query: { termo: categoria.trim() } });
     }
   },
 };
