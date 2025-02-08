@@ -136,6 +136,7 @@ export default {
       
     async carregarResultados() {
       try {
+        // 🔹 CAPTURA OS FILTROS DA URL
         const query = this.$route.query;
         this.termo = query.termo || "";
         this.filtros = {
@@ -147,12 +148,13 @@ export default {
         };
 
         const termoNormalizado = this.termo.trim().toLowerCase();
+
+        // 🔹 BUSCA APENAS OS ANÚNCIOS NO FIRESTORE (SEM PROCESSAR VENDEDORES)
         
-        // Busca inicial dos anúncios
         const resultadosCategoria = await this.daoService.searchByField("categoria", termoNormalizado);
         const todosAnuncios = await this.daoService.getAll();
 
-        // Filtra modelos que contenham parte do termo pesquisado
+        // 🔹 FILTRA MODELOS e MARCA QUE CONTENHAM O TERMO PESQUISADO
         const resultadosMarca = todosAnuncios.filter((anuncio) => {
           const palavrasMarca = anuncio.marca.toLowerCase().split(" ");
           return palavrasMarca.some((palavra) => palavra.includes(termoNormalizado));
@@ -163,53 +165,17 @@ export default {
           return palavrasModelo.some((palavra) => palavra.includes(termoNormalizado));
         });
 
-        // Remove duplicatas dos resultados
+        // 🔹 REMOVE DUPLICATAS
         let todosResultados = [...resultadosMarca, ...resultadosCategoria, ...resultadosModelo];
         todosResultados = todosResultados.filter(
           (item, index, self) => self.findIndex((v) => v.id === item.id) === index
         );
 
-        // Obter IDs únicos dos vendedores
-        const userIds = [...new Set(todosResultados.map((anuncio) => anuncio.userId))];
-
-        // Buscar informações dos vendedores em uma única chamada
-        const userDocs = await Promise.all(userIds.map(async (id) => {
-          const userRef = doc(db, "usuarios", id);
-          const userSnap = await getDoc(userRef);
-          return userSnap.exists() ? { id, ...userSnap.data() } : null;
-        }));
-
-        // Criar um mapa de usuários para acesso rápido
-        const userMap = userDocs.reduce((map, user) => {
-          if (user) {
-            map[user.id] = user;
-          }
-          return map;
-        }, {});
-
-        // Adicionar cidade e estado aos anúncios
-        todosResultados = todosResultados.map(anuncio => ({
-          ...anuncio,
-          cidade: userMap[anuncio.userId]?.endereco?.cidade || "",
-          estado: userMap[anuncio.userId]?.endereco?.estado || "",
-        }));
-
-        // Aplicar filtros avançados
-        this.anuncios = todosResultados.filter((anuncio) => {
-          return (
-            (!this.filtros.cidade || anuncio.cidade.toLowerCase().includes(this.filtros.cidade.toLowerCase())) &&
-            (!this.filtros.estado || anuncio.estado.toLowerCase().includes(this.filtros.estado.toLowerCase())) &&
-            (!this.filtros.km || Number(anuncio.km) <= Number(this.filtros.km)) &&
-            (!this.filtros.valor || Number(anuncio.valor) <= Number(this.filtros.valor)) &&
-            (!this.filtros.ano || Number(anuncio.anoModelo) >= Number(this.filtros.ano))
-          );
-        });
-
-        // Buscar favoritos em uma única chamada
+        // 🔹 CARREGA ANÚNCIOS FAVORITOS
         const favoritos = await FavoritosService.getFavoritos();
         const favoritosMap = new Set(favoritos.map(fav => fav.id));
 
-        this.anuncios = this.anuncios.map((anuncio) => ({
+        this.anuncios = todosResultados.map((anuncio) => ({
           ...anuncio,
           favorito: favoritosMap.has(anuncio.id),
         }));
@@ -220,6 +186,7 @@ export default {
         alert("Erro ao buscar os veículos. Tente novamente.");
       }
     },
+    
     async carregarEstados() {
       try {
         const response = await axios.get("https://servicodados.ibge.gov.br/api/v1/localidades/estados");
