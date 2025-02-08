@@ -2,12 +2,15 @@
   <div>
     <div class="container register-background">
       <div class="row register-container">
-        <!-- Área da imagem -->
         <div class="col-md-6 image-section"></div>
 
-        <!-- Área de cadastro -->
         <div class="col-md-6 form-section">
           <h2>Crie sua conta</h2>
+
+          <!-- Exibe mensagens de erro -->
+          <div v-if="mensagemErro">
+            <p>{{ mensagemErro }}</p>
+          </div>
 
           <form @submit.prevent="handleCadastro">
             <div class="mb-3">
@@ -99,18 +102,20 @@ export default {
       senha: "",
       confirmarSenha: "",
       verificandoEmail: false,
-      verificarInterval: null,
+      mensagemErro: "", // Armazena mensagens de erro
     };
   },
   methods: {
     async handleCadastro() {
       try {
+        this.mensagemErro = ""; // Limpa mensagens anteriores
+
         if (!this.email || !this.nome || !this.sobrenome || !this.senha || !this.confirmarSenha) {
-          alert("Preencha todos os campos obrigatórios!");
+          this.mensagemErro = "Preencha todos os campos obrigatórios.";
           return;
         }
         if (this.senha !== this.confirmarSenha) {
-          alert("As senhas não conferem!");
+          this.mensagemErro = "As senhas digitadas não coincidem. Verifique e tente novamente.";
           return;
         }
 
@@ -122,39 +127,33 @@ export default {
           displayName: `${this.nome} ${this.sobrenome}`,
         });
 
-        // Enviar e-mail de verificação
         await sendEmailVerification(user);
-        alert("Cadastro iniciado com sucesso! Verifique seu e-mail para ativar a conta.");
+        alert("Cadastro realizado com sucesso! Verifique seu e-mail para ativar a conta.");
 
-        // Deslogar o usuário após o cadastro
         await signOut(auth);
         this.$router.push("/login");
 
       } catch (error) {
-        alert("Erro ao cadastrar: " + error.message);
-        console.error(error);
-        this.verificandoEmail = false;
+        this.tratarErros(error);
       }
     },
 
-    async finalizarCadastro(user) {
-      try {
-        const userRef = doc(db, "usuarios", user.uid);
-        await setDoc(userRef, {
-          nome: this.nome,
-          sobrenome: this.sobrenome,
-          email: this.email,
-          endereco: { cidade: "", estado: "", cep: "" },
-          contato: { telefone: "", email: this.email }
-        });
-
-      } catch (error) {
-        console.error("Erro ao finalizar o cadastro:", error);
+    tratarErros(error) {
+      switch (error.code) {
+        case "auth/email-already-in-use":
+          this.mensagemErro = "Este e-mail já está cadastrado. Tente fazer login ou use outro e-mail.";
+          break;
+        case "auth/weak-password":
+          this.mensagemErro = "A senha deve ter pelo menos 6 caracteres.";
+          break;
+        default:
+          this.mensagemErro = "Erro ao cadastrar. Verifique os dados e tente novamente.";
       }
-    },
-  },
+    }
+  }
 };
 </script>
+
 
 <style scoped>
 /* Fundo da tela */
