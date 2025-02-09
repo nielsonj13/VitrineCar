@@ -82,6 +82,8 @@ export default {
         if (user.emailVerified) {
           alert("Seu e-mail já está verificado. Você pode fazer login normalmente.");
           this.enviando = false;
+          await signOut(auth);
+          this.$router.push("/login");
           return;
         }
 
@@ -91,6 +93,7 @@ export default {
 
         // Desloga o usuário imediatamente para evitar login antes da verificação
         await signOut(auth);
+        this.$router.push("/login");
       } catch (error) {
         alert("Senha ou email inválidos, por favor tente novamente.");
         console.error(error);

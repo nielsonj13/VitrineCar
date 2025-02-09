@@ -42,6 +42,7 @@
 
 <script>
 import { getAuth, sendPasswordResetEmail } from "firebase/auth";
+import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
 
 export default {
   name: "EsqueceuSenha",
@@ -54,18 +55,35 @@ export default {
   methods: {
     async recuperarSenha() {
       if (!this.email) {
-        alert("Por favor, insira seu email!");
+        alert("⚠️ Por favor, insira seu email!");
         return;
       }
+
       this.loading = true;
       const auth = getAuth();
+      const db = getFirestore();
+
       try {
+        // 🔹 1️⃣ Verifica no Firestore se o email está cadastrado
+        const usuariosRef = collection(db, "usuarios");
+        const q = query(usuariosRef, where("email", "==", this.email));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+          alert("❌ O email informado não está cadastrado. Verifique e tente novamente.");
+          this.loading = false;
+          return;
+        }
+
+        // 🔹 2️⃣ Se o email existir, envia a solicitação de redefinição de senha
         await sendPasswordResetEmail(auth, this.email);
-        alert(`Instruções enviadas para o email: ${this.email}`);
+        alert(`✅ Instruções enviadas para o email: ${this.email}`);
         this.email = "";
         this.$router.push("/login");
+
       } catch (error) {
-        alert("Erro ao enviar email de recuperação: " + error.message);
+        alert("⚠️ Erro ao enviar email de recuperação. Tente novamente mais tarde.");
+        console.error("Erro ao enviar email de recuperação:", error);
       } finally {
         this.loading = false;
       }
