@@ -115,10 +115,11 @@ export default {
   watch: {
     // Carregar cidades automaticamente quando um estado for selecionado
     "filtros.estado"(novoEstado) {
+      this.filtros.cidade = ""; // 🔹 Reseta a cidade ao mudar de estado
+      this.cidades = []; // 🔹 Limpa a lista de cidades antes de carregar as novas
+
       if (novoEstado) {
-        this.carregarCidades(novoEstado);
-      } else {
-        this.cidades = [];
+        this.carregarCidades(novoEstado); // 🔹 Carrega as cidades do novo estado
       }
     }
   },
@@ -198,7 +199,12 @@ export default {
 
     async carregarCidades(estadoSigla) {
       try {
-        const response = await axios.get(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${estadoSigla}/municipios`);
+        if (!estadoSigla) return; // Se não houver estado, não faz nada
+
+        const response = await axios.get(
+          `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${estadoSigla}/municipios`
+        );
+
         this.cidades = response.data.map((cidade) => cidade.nome).sort();
       } catch (error) {
         console.error("Erro ao carregar cidades:", error);
