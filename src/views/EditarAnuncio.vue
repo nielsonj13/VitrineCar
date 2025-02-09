@@ -15,7 +15,7 @@
         </div>
         <div class="form-group">
           <label for="marca">Marca:</label>
-          <select v-model="anuncio.marca" @change="carregarModelos">
+          <select v-model="anuncio.marca" @change="marcaAlterada = true; carregarModelos()">
             <option value="" disabled>Selecione uma marca</option>
             <option v-for="marca in marcas" :key="marca.codigo" :value="marca.codigo">
               {{ marca.nome }}
@@ -189,6 +189,7 @@ export default {
         imagens: ["", "", ""],
         userId: null,
       },
+      marcaAlterada: false,
       marcas: [],  // Armazena as marcas da API FIPE
       modelos: [],  // Armazena os modelos da API FIPE
       opcionais: [
@@ -229,6 +230,13 @@ export default {
       this.modelos = []; // Limpar os modelos disponíveis
       this.anuncio.modelo = ""; // Resetar modelo
       this.carregarMarcas(); // Atualiza as marcas conforme o novo tipo
+    },
+    "anuncio.marca"() {
+      if (this.marcaAlterada) { // 🔹 Só reseta se o usuário realmente mudar a marca
+        this.anuncio.modelo = ""; // Resetar modelo
+        this.modelos = []; // Limpar modelos disponíveis
+        this.carregarModelos(); // Atualiza os modelos conforme a nova marca
+      }
     }
   },
   methods: {
