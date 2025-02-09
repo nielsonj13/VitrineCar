@@ -7,32 +7,30 @@
       <div class="form">
         <div class="form-group">
           <label for="tipoVeiculo">Tipo de Veículo:</label>
-          <select v-model="tipoVeiculo" @change="carregarMarcas">
+          <select v-model="tipoVeiculo" @change="atualizarTipoVeiculo">
+            <option value="" disabled>Selecione o tipo de veículo</option>
             <option value="carros">Carro</option>
             <option value="motos">Moto</option>
           </select>
         </div>
-
         <div class="form-group">
           <label for="marca">Marca:</label>
           <select v-model="anuncio.marca" @change="carregarModelos">
-            <option value="" disabled selected>Selecione a marca</option>
+            <option value="" disabled>Selecione uma marca</option>
             <option v-for="marca in marcas" :key="marca.codigo" :value="marca.codigo">
               {{ marca.nome }}
             </option>
           </select>
         </div>
-
         <div class="form-group">
           <label for="modelo">Modelo:</label>
           <select v-model="anuncio.modelo">
-            <option value="" disabled selected>Selecione o modelo</option>
+            <option value="" disabled>Selecione um modelo</option>
             <option v-for="modelo in modelos" :key="modelo.codigo" :value="modelo.nome">
               {{ modelo.nome }}
             </option>
           </select>
         </div>
-
         <div class="form-group">
           <label>Ano do Modelo</label>
           <input type="text" v-model="anuncio.anoModelo" placeholder="Digite o ano do modelo" @input="validarAno('anoModelo')" />
@@ -224,6 +222,15 @@ export default {
     // Carrega o anúncio a ser editado
     this.carregarAnuncio();
   },
+  watch: {
+    // Sempre que o tipo de veículo mudar, redefinir marca e modelo
+    "tipoVeiculo"() {
+      this.anuncio.marca = ""; // Resetar marca
+      this.modelos = []; // Limpar os modelos disponíveis
+      this.anuncio.modelo = ""; // Resetar modelo
+      this.carregarMarcas(); // Atualiza as marcas conforme o novo tipo
+    }
+  },
   methods: {
     adicionarImagem() {
       this.anuncio.imagens.push("");
@@ -232,23 +239,35 @@ export default {
       this.anuncio.imagens.splice(index, 1);
     },
 
+    atualizarTipoVeiculo() {
+      this.anuncio.marca = ""; // Resetar a marca
+      this.anuncio.modelo = ""; // Resetar o modelo
+      this.modelos = []; // Limpar os modelos disponíveis
+      this.carregarMarcas(); // Agora ele chama corretamente a função de carregar marcas
+    },
+
     async carregarMarcas() {
       try {
+        if (!this.tipoVeiculo) return;
+
         const response = await axios.get(
           `https://parallelum.com.br/fipe/api/v1/${this.tipoVeiculo}/marcas`
         );
-        this.marcas = response.data;
+
+        this.marcas = response.data; // Atualiza a lista de marcas
       } catch (error) {
         console.error("Erro ao carregar marcas:", error);
       }
     },
 
     async carregarModelos() {
-      if (!this.anuncio.marca) return;
       try {
+        if (!this.anuncio.marca) return;
+
         const response = await axios.get(
           `https://parallelum.com.br/fipe/api/v1/${this.tipoVeiculo}/marcas/${this.anuncio.marca}/modelos`
         );
+
         this.modelos = response.data.modelos;
       } catch (error) {
         console.error("Erro ao carregar modelos:", error);
