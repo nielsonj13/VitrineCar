@@ -436,6 +436,11 @@ export default {
           this.anuncio.modelo = this.formatarModelo(this.anuncio.modelo);
         }
 
+        if (!this.anuncio.imagens.some(img => img.trim() !== "")) {
+          alert("Você precisa adicionar pelo menos uma imagem para finalizar o anúncio.");
+          return;
+        }
+
         // Normalizar os campos antes de salvar
         this.anuncio.marca = this.anuncio.marca.trim().toLowerCase(); 
         this.anuncio.modelo = this.anuncio.modelo.trim().toLowerCase();
