@@ -8,8 +8,9 @@
         <div v-if="carros.length > 0" class="anuncios-container">
           <div v-for="carro in carros" :key="carro.id" class="card">
             <img 
-              :src="carro.imagens && carro.imagens.length > 0 ? carro.imagens[0] : 'https://via.placeholder.com/300?text=Sem+Imagem'" 
+              :src="getImagem(carro)" 
               alt="Imagem do veículo" 
+              @error="imagemErro($event)"
               class="img-fluid"
             />
             <div class="car-info">
@@ -59,31 +60,37 @@ export default {
     await this.carregarFavoritos();
   },
   methods: {
+    getImagem(carro) {
+      if (carro.imagens && Array.isArray(carro.imagens) && carro.imagens.length > 0) {
+        return carro.imagens[0]; // Retorna a primeira imagem se existir
+      } 
+    },
+    imagemErro(event) {
+      event.target.src = '/logos/logo_vitrinecar.png'; // Força a logo caso a imagem falhe
+    },
     async carregarFavoritos() {
-  try {
-    // Obtém a lista de favoritos salvos no banco de dados
-    let favoritos = await FavoritosService.getFavoritos();
+      try {
+        // Obtém a lista de favoritos salvos no banco de dados
+        let favoritos = await FavoritosService.getFavoritos();
 
-    // Obtém todos os anúncios ativos
-    const anunciosAtivos = await this.daoService.getAll();
+        // Obtém todos os anúncios ativos
+        const anunciosAtivos = await this.daoService.getAll();
 
-    // Filtra os favoritos, removendo aqueles que foram excluídos ou vendidos
-    this.carros = favoritos.filter((favorito) =>
-      anunciosAtivos.some((anuncio) => anuncio.id === favorito.id && !anuncio.vendido)
-    ).map(carro => ({
-      ...carro,
-      favorito: true, // Mantém a estrela acesa para veículos válidos
-    }));
+        // Filtra os favoritos, removendo aqueles que foram excluídos ou vendidos
+        this.carros = favoritos.filter((favorito) =>
+          anunciosAtivos.some((anuncio) => anuncio.id === favorito.id && !anuncio.vendido)
+        ).map(carro => ({
+          ...carro,
+          favorito: true, // Mantém a estrela acesa para veículos válidos
+        }));
 
-    // Atualiza o FavoritosService para manter apenas os válidos
-    FavoritosService.atualizarFavoritos(this.carros);
+        // Atualiza o FavoritosService para manter apenas os válidos
+        FavoritosService.atualizarFavoritos(this.carros);
 
-  } catch (error) {
-    console.error("Erro ao carregar favoritos:", error);
-  }
-}
-,
-
+      } catch (error) {
+        console.error("Erro ao carregar favoritos:", error);
+      }
+    },
     async toggleFavorito(anuncio) {
       if (!FavoritosService.getUsuarioLogado()) {
         alert("Você precisa estar logado para favoritar um anúncio.");

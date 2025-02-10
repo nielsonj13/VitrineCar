@@ -13,7 +13,7 @@
         <!-- Imagem Principal -->
         <div class="imagem-principal">
           <img :src="veiculo.imagens?.[imagemSelecionada] || ''" class="main-image" 
-               alt="Imagem do veículo" @click="abrirTelaCheia">
+               alt="Imagem do veículo" @click="abrirTelaCheia" @error="imagemErro($event)">
         </div>
 
         <!-- Botão Próximo -->
@@ -31,6 +31,7 @@
               class="miniatura img-thumbnail" 
               @click="selecionarImagem(miniaturaInicio + index)" 
               :class="{ active: (miniaturaInicio + index) === imagemSelecionada }"
+              @error="imagemErro($event)" 
               alt="Miniatura do veículo">
           </div>
         </div>
@@ -40,7 +41,7 @@
       <div v-if="telaCheiaAtiva" class="modal-fullscreen" @click="fecharTelaCheia">
         <button class="close-button" @click.stop="fecharTelaCheia">X</button>
         <button class="modal-prev" @click.stop="anteriorImagem">&#10094;</button>
-        <img :src="veiculo.imagens?.[imagemSelecionada] || ''" class="fullscreen-image" />
+        <img :src="veiculo.imagens?.[imagemSelecionada] || ''" class="fullscreen-image" @error="imagemErro($event)"/>
         <button class="modal-next" @click.stop="proximaImagem">&#10095;</button>
       </div>
 
@@ -148,6 +149,9 @@ export default {
     }
   },
   methods: {
+    imagemErro(event) {
+    event.target.src = '/logos/logo_vitrinecar.png'; // Força a logo caso a imagem falhe
+  },
     selecionarImagem(index) {
       this.imagemSelecionada = index;
       this.atualizarMiniaturas();

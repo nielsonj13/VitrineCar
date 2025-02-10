@@ -46,9 +46,10 @@
         <div class="anuncios-container">
           <div v-for="anuncio in anuncios" :key="anuncio.id" class="card">
             <img 
-              :src="anuncio.imagens && anuncio.imagens.length > 0 ? anuncio.imagens[0] : 'https://via.placeholder.com/300?text=Sem+Imagem'"
+              :src="getImagem(anuncio)" 
               alt="Imagem do veículo" 
-              class="img-fluid" 
+              @error="imagemErro($event)"
+              class="img-fluid"
             />
             <div class="car-info">
               <div class="title-container">
@@ -124,6 +125,15 @@ export default {
     }
   },
   methods: {
+
+    getImagem(anuncio) {
+      if (anuncio.imagens && Array.isArray(anuncio.imagens) && anuncio.imagens.length > 0) {
+        return anuncio.imagens[0]; // Retorna a primeira imagem se existir
+      } 
+    },
+    imagemErro(event) {
+      event.target.src = '/logos/logo_vitrinecar.png'; // Força a logo caso a imagem falhe
+    },
 
     async pesquisarVeiculos() {
       this.$router.push({

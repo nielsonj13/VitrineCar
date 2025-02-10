@@ -10,10 +10,11 @@
        
         <div v-for="anuncio in anuncios" :key="anuncio.id" class="card">
           <img 
-            :src="anuncio.imagens && anuncio.imagens.length > 0 ? anuncio.imagens[0] : 'https://via.placeholder.com/300?text=Sem+Imagem'" 
-            alt="Imagem do veículo" 
-            class="img-fluid"
-          />
+              :src="getImagem(anuncio)" 
+              alt="Imagem do veículo" 
+              @error="imagemErro($event)"
+              class="img-fluid"
+            />
 
           <div class="car-info">
             <div class="title-container">
@@ -87,6 +88,15 @@ export default {
     this.verificarUsuario();
   },
   methods: {
+    getImagem(anuncio) {
+      if (anuncio.imagens && Array.isArray(anuncio.imagens) && anuncio.imagens.length > 0) {
+        return anuncio.imagens[0]; // Retorna a primeira imagem se existir
+      } 
+    },
+    imagemErro(event) {
+      event.target.src = '/logos/logo_vitrinecar.png'; // Força a logo caso a imagem falhe
+    },
+
     verificarUsuario() {
       const auth = getAuth();
       onAuthStateChanged(auth, (user) => {
@@ -98,7 +108,7 @@ export default {
         }
       });
     },
-
+    
     async carregarAnuncios() {
       try {
         const anunciosAtivos = await this.daoService.getAll();
