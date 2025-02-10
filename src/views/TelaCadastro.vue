@@ -29,6 +29,7 @@
                 class="form-control" 
                 placeholder="Digite seu nome" 
                 required 
+                maxlength="15"
               />
             </div>
 
@@ -41,6 +42,7 @@
                 class="form-control" 
                 placeholder="Digite seu sobrenome" 
                 required 
+                maxlength="15"
               />
             </div>
 

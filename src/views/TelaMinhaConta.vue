@@ -19,11 +19,11 @@
             </div>
             <div class="form-group">
               <label for="nome">Nome</label>
-              <input type="text" id="nome" v-model="dados.nome" placeholder="Nome" />
+              <input type="text" id="nome" v-model="dados.nome" placeholder="Nome" maxlength="15" />
             </div>
             <div class="form-group">
               <label for="sobrenome">Sobrenome</label>
-              <input type="text" id="sobrenome" v-model="dados.sobrenome" placeholder="Sobrenome" />
+              <input type="text" id="sobrenome" v-model="dados.sobrenome" placeholder="Sobrenome" maxlength="15" />
             </div>
             <div class="form-group">
               <label for="data-nascimento">Data de Nascimento</label>
@@ -151,9 +151,18 @@ export default {
       if (cep.length > 8) {
         cep = cep.slice(0, 8); // Limita o tamanho máximo
       }
-
-
       this.endereco.cep = cep;
+    },
+
+    validarCEP() {
+      if (this.endereco.cep.length !== 8) {
+        alert("CEP inválido!");
+        this.endereco.cep = ""; 
+        this.endereco.cidade = "";
+        this.endereco.estado = "";
+        return false;
+      }
+      return true; // O CEP é válido
     },
 
     async buscarCep() {
@@ -162,6 +171,9 @@ export default {
           const response = await axios.get(`https://viacep.com.br/ws/${this.endereco.cep}/json/`);
           if (response.data.erro) {
             alert("CEP não encontrado!");
+            this.endereco.cidade = "";
+            this.endereco.estado = "";
+            this.endereco.cep= "";
           } else {
             this.endereco.cidade = response.data.localidade;
             this.endereco.estado = response.data.uf;
@@ -234,6 +246,10 @@ export default {
 
     async salvarAlteracoes() {
       try {
+
+        if (!this.validarCPF() || !this.validarCEP()) {
+          return;
+        }
         const auth = getAuth();
         const user = auth.currentUser;
         if (user) {
