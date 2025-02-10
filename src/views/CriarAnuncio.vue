@@ -141,7 +141,7 @@
             <input type="text" v-model="anuncio.imagens[index]" placeholder="Insira o link da imagem" />
             
             <!-- Ícone de Remover dentro do Input -->
-            <button v-if="index > 2" @click="removerImagem(index)" class="remove-btn" title="Remover imagem">
+            <button v-if="index > 0" @click="removerImagem(index)" class="remove-btn" title="Remover imagem">
               <i class="bi bi-x-circle-fill"></i>
             </button>
           </div>
@@ -183,7 +183,7 @@ export default {
         valor: "",
         cor: "",
         opcionais: [],
-        imagens: ["", "", ""],
+        imagens: ["",],
         userId: null,
       },
       marcas: [],
@@ -365,19 +365,19 @@ export default {
     },
     async finalizarAnuncio() {
       try {
-        
         if (!this.anuncio.userId) {
           alert("Você precisa estar logado para criar um anúncio.");
           return;
         }
-        
+        if (!this.anuncio.imagens.some(img => img.trim() !== "")) {
+          alert("Você precisa adicionar pelo menos uma imagem para finalizar o anúncio.");
+          return;
+        }
         this.anuncio.modelo = this.formatarModelo(this.anuncio.modelo);
         this.anuncio.marca = this.marcas.find(m => m.codigo === this.anuncio.marca)?.nome || "";
         this.anuncio.marca = this.anuncio.marca.trim().toLowerCase(); 
         this.anuncio.modelo = this.anuncio.modelo.trim().toLowerCase();
         this.anuncio.categoria = this.anuncio.categoria.trim().toLowerCase();
-
-
         const id = await this.daoService.insert(this.anuncio);
         alert(`Anúncio finalizado com sucesso! ID: ${id}`);
         this.$router.push("/TelaMeusAnuncios");

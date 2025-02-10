@@ -142,7 +142,7 @@
             <input type="text" v-model="anuncio.imagens[index]" placeholder="Insira o link da imagem" />
             
             <!-- Ícone de Remover dentro do Input -->
-            <button v-if="index > 2" @click="removerImagem(index)" class="remove-btn" title="Remover imagem">
+            <button v-if="index > 0" @click="removerImagem(index)" class="remove-btn" title="Remover imagem">
               <i class="bi bi-x-circle-fill"></i>
             </button>
           </div>
@@ -186,7 +186,7 @@ export default {
         valor: "",
         cor: "",
         opcionais: [],
-        imagens: ["", "", ""],
+        imagens: ["",],
         userId: null,
       },
       marcaAlterada: false,
