@@ -300,6 +300,7 @@ export default {
             },
           }, { merge: true });
           alert("Alterações salvas com sucesso!");
+          this.$router.push('/');
         } else {
           alert("Usuário não autenticado.");
         }
